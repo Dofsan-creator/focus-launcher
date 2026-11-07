@@ -1,0 +1,51 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/focus-core",
+    "crates/focus-library",
+    "crates/focus-input",
+    "crates/focus-sys",
+    "crates/focus-guardian",
+    "crates/focus-app",
+    "crates/focus-ui",
+]
+# focus-ui se compile pour wasm32 avec Trunk, jamais pour la machine hôte.
+default-members = [
+    "crates/focus-core",
+    "crates/focus-library",
+    "crates/focus-input",
+    "crates/focus-sys",
+    "crates/focus-guardian",
+    "crates/focus-app",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+rust-version = "1.85"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tracing = "0.1"
+tempfile = "3"
+focus-core = { path = "crates/focus-core" }
+focus-library = { path = "crates/focus-library" }
+focus-input = { path = "crates/focus-input" }
+focus-sys = { path = "crates/focus-sys" }
+
+[workspace.lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
+
+[workspace.lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+redundant_clone = "warn"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
+panic = "abort"

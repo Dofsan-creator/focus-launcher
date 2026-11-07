@@ -1,0 +1,223 @@
+//! Instantané en lecture seule des processus et des services.
+
+use crate::wide::from_wide;
+use focus_core::model::{ProcessInfo, ServiceInfo, ServiceState, Snapshot};
+use focus_core::whitelist::normalize;
+use std::mem::size_of;
+use windows::core::{PCWSTR, PWSTR};
+use windows::Win32::Foundation::{CloseHandle, FILETIME, HANDLE, MAX_PATH};
+use windows::Win32::System::Diagnostics::ToolHelp::{
+    CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W, TH32CS_SNAPPROCESS,
+};
+use windows::Win32::System::ProcessStatus::{GetProcessMemoryInfo, PROCESS_MEMORY_COUNTERS};
+use windows::Win32::System::Services::{
+    CloseServiceHandle, EnumServicesStatusExW, OpenSCManagerW, ENUM_SERVICE_STATUS_PROCESSW,
+    SC_ENUM_PROCESS_INFO, SC_MANAGER_ENUMERATE_SERVICE, SERVICE_RUNNING, SERVICE_STATE_ALL,
+    SERVICE_STOPPED, SERVICE_WIN32,
+};
+use windows::Win32::System::Threading::{
+    GetProcessTimes, OpenProcess, QueryFullProcessImageNameW, PROCESS_NAME_WIN32,
+    PROCESS_QUERY_LIMITED_INFORMATION,
+};
+
+/// Heure de création d'un processus, qui le distingue d'un pid réutilisé.
+pub fn process_start_time(pid: u32) -> Option<u64> {
+    // SAFETY: le handle est vérifié puis fermé ; droits en lecture limitée.
+    unsafe {
+        let handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid).ok()?;
+        let time = start_time(handle);
+        let _ = CloseHandle(handle);
+        time
+    }
+}
+
+unsafe fn start_time(handle: HANDLE) -> Option<u64> {
+    let (mut created, mut exited, mut kernel, mut user) = (
+        FILETIME::default(),
+        FILETIME::default(),
+        FILETIME::default(),
+        FILETIME::default(),
+    );
+    // SAFETY: les pointeurs désignent des variables locales valides.
+    unsafe { GetProcessTimes(handle, &mut created, &mut exited, &mut kernel, &mut user).ok()? };
+    Some((u64::from(created.dwHighDateTime) << 32) | u64::from(created.dwLowDateTime))
+}
+
+fn process_details(pid: u32) -> (u64, Option<String>, u64) {
+    // SAFETY: le handle est vérifié puis fermé ; tous les tampons sont locaux.
+    unsafe {
+        let Ok(handle) = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid) else {
+            return (0, None, 0);
+        };
+        let time = start_time(handle).unwrap_or(0);
+        let mut buffer = [0_u16; MAX_PATH as usize * 4];
+        let mut size = buffer.len() as u32;
+        let path = QueryFullProcessImageNameW(
+            handle,
+            PROCESS_NAME_WIN32,
+            PWSTR(buffer.as_mut_ptr()),
+            &mut size,
+        )
+        .ok()
+        .map(|()| String::from_utf16_lossy(&buffer[..size as usize]));
+        let mut memory = PROCESS_MEMORY_COUNTERS::default();
+        let bytes = GetProcessMemoryInfo(
+            handle,
+            &mut memory,
+            size_of::<PROCESS_MEMORY_COUNTERS>() as u32,
+        )
+        .map_or(0, |()| memory.WorkingSetSize as u64);
+        let _ = CloseHandle(handle);
+        (time, path, bytes)
+    }
+}
+
+/// Liste les processus. Un accès refusé n'est pas une erreur.
+pub fn processes() -> Vec<ProcessInfo> {
+    let mut list = Vec::new();
+    // SAFETY: le snapshot est fermé ; `entry` a sa taille renseignée.
+    unsafe {
+        let Ok(snapshot) = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) else {
+            return list;
+        };
+        let mut entry = PROCESSENTRY32W {
+            dwSize: size_of::<PROCESSENTRY32W>() as u32,
+            ..Default::default()
+        };
+        let mut more = Process32FirstW(snapshot, &mut entry).is_ok();
+        while more {
+            let pid = entry.th32ProcessID;
+            let (start_time, path, memory) = process_details(pid);
+            list.push(ProcessInfo {
+                pid,
+                start_time,
+                name: normalize(&from_wide(&entry.szExeFile)),
+                path,
+                memory,
+            });
+            more = Process32NextW(snapshot, &mut entry).is_ok();
+        }
+        let _ = CloseHandle(snapshot);
+    }
+    list
+}
+
+/// Liste les services Win32 par nom interne.
+pub fn services() -> Vec<ServiceInfo> {
+    let mut list = Vec::new();
+    // SAFETY: le tampon est aligné sur `u64`, assez grand pour les structures
+    // renvoyées, et les chaînes pointées vivent dans ce même tampon.
+    unsafe {
+        let Ok(manager) =
+            OpenSCManagerW(PCWSTR::null(), PCWSTR::null(), SC_MANAGER_ENUMERATE_SERVICE)
+        else {
+            return list;
+        };
+        let (mut needed, mut count, mut resume) = (0_u32, 0_u32, 0_u32);
+        let _ = EnumServicesStatusExW(
+            manager,
+            SC_ENUM_PROCESS_INFO,
+            SERVICE_WIN32,
+            SERVICE_STATE_ALL,
+            None,
+            &mut needed,
+            &mut count,
+            Some(&mut resume),
+            PCWSTR::null(),
+        );
+        let mut buffer = vec![0_u64; (needed as usize).div_ceil(8) + 1];
+        let bytes =
+            std::slice::from_raw_parts_mut(buffer.as_mut_ptr().cast::<u8>(), buffer.len() * 8);
+        resume = 0;
+        if EnumServicesStatusExW(
+            manager,
+            SC_ENUM_PROCESS_INFO,
+            SERVICE_WIN32,
+            SERVICE_STATE_ALL,
+            Some(bytes),
+            &mut needed,
+            &mut count,
+            Some(&mut resume),
+            PCWSTR::null(),
+        )
+        .is_ok()
+        {
+            let items = std::slice::from_raw_parts(
+                buffer.as_ptr().cast::<ENUM_SERVICE_STATUS_PROCESSW>(),
+                count as usize,
+            );
+            for item in items {
+                let state = item.ServiceStatusProcess.dwCurrentState;
+                list.push(ServiceInfo {
+                    name: item.lpServiceName.to_string().unwrap_or_default(),
+                    display_name: item.lpDisplayName.to_string().unwrap_or_default(),
+                    state: if state == SERVICE_RUNNING {
+                        ServiceState::Running
+                    } else if state == SERVICE_STOPPED {
+                        ServiceState::Stopped
+                    } else {
+                        ServiceState::Other
+                    },
+                });
+            }
+        }
+        let _ = CloseServiceHandle(manager);
+    }
+    list
+}
+
+/// Prend un instantané complet.
+pub fn snapshot() -> Snapshot {
+    Snapshot {
+        processes: processes(),
+        services: services(),
+    }
+}
+
+/// Noms des processus, sans ouvrir aucun d'eux : c'est ce qui permet de suivre un
+/// jeu protégé par un anticheat sans jamais y toucher (SPEC D7).
+pub fn process_names() -> Vec<String> {
+    let mut names = Vec::new();
+    // SAFETY: le snapshot est fermé ; `entry` a sa taille renseignée.
+    unsafe {
+        let Ok(snapshot) = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) else {
+            return names;
+        };
+        let mut entry = PROCESSENTRY32W {
+            dwSize: size_of::<PROCESSENTRY32W>() as u32,
+            ..Default::default()
+        };
+        let mut more = Process32FirstW(snapshot, &mut entry).is_ok();
+        while more {
+            names.push(normalize(&from_wide(&entry.szExeFile)));
+            more = Process32NextW(snapshot, &mut entry).is_ok();
+        }
+        let _ = CloseHandle(snapshot);
+    }
+    names
+}
+
+/// L'un de ces exécutables tourne-t-il ?
+pub fn any_running(names: &[String]) -> bool {
+    !names.is_empty() && process_names().iter().any(|name| names.contains(name))
+}
+
+/// Vrai si un processus de ce nom tourne.
+pub fn is_running(name: &str) -> bool {
+    let key = normalize(name);
+    processes().iter().any(|process| process.name == key)
+}
+
+/// Processus dont l'exécutable est dans `dir` : le vrai jeu, derrière un lanceur.
+pub fn processes_in_dir(dir: &str) -> Vec<ProcessInfo> {
+    let root = dir.replace('/', "\\").trim_end_matches('\\').to_lowercase() + "\\";
+    processes()
+        .into_iter()
+        .filter(|process| {
+            process
+                .path
+                .as_ref()
+                .is_some_and(|path| path.to_lowercase().starts_with(&root))
+        })
+        .collect()
+}

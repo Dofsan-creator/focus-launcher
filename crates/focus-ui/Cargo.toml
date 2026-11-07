@@ -1,0 +1,29 @@
+[package]
+name = "focus-ui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+focus-core.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+leptos = { version = "0.8", features = ["csr"] }
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+js-sys = "0.3"
+serde-wasm-bindgen = "0.6"
+fluent-bundle = "0.15"
+unic-langid = "0.9"
+
+[dependencies.web-sys]
+version = "0.3"
+features = [
+    "AudioContext", "AudioDestinationNode", "AudioNode", "AudioParam", "BaseAudioContext",
+    "Document", "DomRect", "Element", "HtmlElement", "KeyboardEvent", "MouseEvent",
+    "Navigator", "NodeList", "OscillatorNode", "GainNode", "ScrollIntoViewOptions",
+    "ScrollLogicalPosition", "Window", "CssStyleDeclaration", "DomTokenList",
+]
+
+[lints]
+workspace = true

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "profiles": [
+    {
+      "name": "Concentration",
+      "simulationOnly": false,
+      "rules": [
+        { "type": "process", "name": "OneDrive", "action": "throttle", "restoreAfterGame": true, "risk": "low", "reason": "Cloud sync is not needed while playing" },
+        { "type": "process", "name": "Dropbox", "action": "throttle", "restoreAfterGame": true, "risk": "low", "reason": "Cloud sync is not needed while playing" },
+        { "type": "process", "name": "GoogleDriveFS", "action": "throttle", "restoreAfterGame": true, "risk": "low", "reason": "Cloud sync is not needed while playing" },
+        { "type": "process", "name": "ms-teams", "action": "throttle", "restoreAfterGame": true, "risk": "low", "reason": "Work chat in the background" },
+        { "type": "process", "name": "chrome", "action": "askUser", "restoreAfterGame": false, "risk": "medium", "reason": "Open tabs may hold unsaved work" },
+        { "type": "process", "name": "msedge", "action": "askUser", "restoreAfterGame": false, "risk": "medium", "reason": "Open tabs may hold unsaved work" },
+        { "type": "process", "name": "firefox", "action": "askUser", "restoreAfterGame": false, "risk": "medium", "reason": "Open tabs may hold unsaved work" },
+        { "type": "service", "name": "WSearch", "action": "stop", "restoreAfterGame": true, "risk": "low", "reason": "Search indexing uses the disk" },
+        { "type": "service", "name": "SysMain", "action": "stop", "restoreAfterGame": true, "risk": "low", "reason": "Prefetching uses the disk" },
+        { "type": "service", "name": "Spooler", "action": "stop", "restoreAfterGame": true, "risk": "low", "reason": "Printing is not used while playing" }
+      ]
+    }
+  ],
+  "neverTouch": []
+}

@@ -1,0 +1,10 @@
+target/
+dist/
+node_modules/
+logs/
+*.log
+system-report.json
+system-report.md
+session.lock.json
+.env
+crates/focus-app/gen/
