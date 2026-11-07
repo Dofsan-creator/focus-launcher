@@ -19,9 +19,15 @@ fn scope(document: &Document) -> Option<Element> {
 }
 
 fn focusables() -> Vec<HtmlElement> {
-    let Some(document) = document() else { return Vec::new() };
-    let Some(root) = scope(&document) else { return Vec::new() };
-    let Ok(nodes) = root.query_selector_all("button.f:not([disabled])") else { return Vec::new() };
+    let Some(document) = document() else {
+        return Vec::new();
+    };
+    let Some(root) = scope(&document) else {
+        return Vec::new();
+    };
+    let Ok(nodes) = root.query_selector_all("button.f:not([disabled])") else {
+        return Vec::new();
+    };
     (0..nodes.length())
         .filter_map(|index| nodes.item(index)?.dyn_into::<HtmlElement>().ok())
         .collect()
@@ -29,7 +35,12 @@ fn focusables() -> Vec<HtmlElement> {
 
 fn rect_of(element: &HtmlElement) -> Rect {
     let rect = element.get_bounding_client_rect();
-    Rect { x: rect.x(), y: rect.y(), w: rect.width(), h: rect.height() }
+    Rect {
+        x: rect.x(),
+        y: rect.y(),
+        w: rect.width(),
+        h: rect.height(),
+    }
 }
 
 /// Élément actif s'il est dans la portée courante.
@@ -53,7 +64,9 @@ fn focus(element: &HtmlElement) {
 /// Place le focus sur l'élément marqué `data-auto`, sinon sur le premier.
 pub fn focus_first() {
     let elements = focusables();
-    let preferred = elements.iter().find(|element| element.has_attribute("data-auto"));
+    let preferred = elements
+        .iter()
+        .find(|element| element.has_attribute("data-auto"));
     if let Some(element) = preferred.or(elements.first()) {
         focus(element);
     }
@@ -88,5 +101,9 @@ pub fn confirm() {
 
 /// Indice de carte de l'élément actif, sur l'accueil.
 pub fn active_card() -> Option<i32> {
-    document()?.active_element()?.get_attribute("data-card")?.parse().ok()
+    document()?
+        .active_element()?
+        .get_attribute("data-card")?
+        .parse()
+        .ok()
 }

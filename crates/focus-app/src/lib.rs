@@ -19,7 +19,10 @@ pub fn run() {
             let data = app.path().app_local_data_dir()?;
             std::fs::create_dir_all(data.join("logs"))?;
             let writer = tracing_appender::rolling::daily(data.join("logs"), "launcher.log");
-            let _ = tracing_subscriber::fmt().with_writer(writer).with_ansi(false).try_init();
+            let _ = tracing_subscriber::fmt()
+                .with_writer(writer)
+                .with_ansi(false)
+                .try_init();
 
             let shared = Arc::new(App::open(&data)?);
             shared.recover_previous_session();

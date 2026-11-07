@@ -46,7 +46,7 @@ pub fn list_entries(state: Shared<'_>) -> CmdResult<Vec<MergedEntry>> {
 
 /// Relit toutes les boutiques, dans un fil pour ne pas bloquer l'interface.
 #[tauri::command]
-pub async fn refresh_library(app: AppHandle, state: Shared<'_, >) -> CmdResult<Vec<String>> {
+pub async fn refresh_library(app: AppHandle, state: Shared<'_>) -> CmdResult<Vec<String>> {
     let shared = state.inner().clone();
     tauri::async_runtime::spawn_blocking(move || scan_into(&shared, &app))
         .await
@@ -153,13 +153,20 @@ pub fn force_close_running(state: Shared<'_>) -> CmdResult<()> {
 
 fn valid_target(path: &str) -> bool {
     let lower = path.to_lowercase();
-    [".exe", ".lnk", ".bat", ".cmd"].iter().any(|ext| lower.ends_with(ext))
+    [".exe", ".lnk", ".bat", ".cmd"]
+        .iter()
+        .any(|ext| lower.ends_with(ext))
         && !exe_score::is_protected_dir(Path::new(path))
 }
 
 /// Ajoute un fichier choisi par l'utilisateur. Il n'est jamais exécuté pour l'inspecter.
 #[tauri::command]
-pub fn add_file(state: Shared<'_>, path: String, title: String, kind: EntryKind) -> CmdResult<Entry> {
+pub fn add_file(
+    state: Shared<'_>,
+    path: String,
+    title: String,
+    kind: EntryKind,
+) -> CmdResult<Entry> {
     if !valid_target(&path) {
         return Err(AppError::Other(format!("unsupported file: {path}")));
     }
@@ -170,7 +177,11 @@ pub fn add_file(state: Shared<'_>, path: String, title: String, kind: EntryKind)
         title,
         kind,
         store: Store::Manual,
-        target: LaunchTarget::Executable { path, args: Vec::new(), working_dir: dir.clone() },
+        target: LaunchTarget::Executable {
+            path,
+            args: Vec::new(),
+            working_dir: dir.clone(),
+        },
         install_dir: dir,
         cover: None,
         favorite: false,
@@ -207,7 +218,11 @@ pub fn list_drives() -> Vec<DirItem> {
     ('A'..='Z')
         .map(|letter| format!("{letter}:\\"))
         .filter(|root| Path::new(root).is_dir())
-        .map(|root| DirItem { name: root.clone(), path: root, is_dir: true })
+        .map(|root| DirItem {
+            name: root.clone(),
+            path: root,
+            is_dir: true,
+        })
         .collect()
 }
 
@@ -261,20 +276,27 @@ pub fn catalog() -> CmdResult<Vec<CatalogItem>> {
     #[cfg(not(windows))]
     let winget = false;
     let apps = catalog::load().map_err(|e| AppError::Other(e.to_string()))?;
-    Ok(apps.into_iter().map(|app| CatalogItem { app, winget }).collect())
+    Ok(apps
+        .into_iter()
+        .map(|app| CatalogItem { app, winget })
+        .collect())
 }
 
 /// Installe par winget. L'identifiant vient du catalogue, jamais de l'interface.
 #[tauri::command]
 pub fn install_app(app: AppHandle, id: String) -> CmdResult<()> {
     let apps = catalog::load().map_err(|e| AppError::Other(e.to_string()))?;
-    let item = apps.into_iter().find(|a| a.id == id).ok_or(AppError::UnknownEntry(id))?;
+    let item = apps
+        .into_iter()
+        .find(|a| a.id == id)
+        .ok_or(AppError::UnknownEntry(id))?;
     std::thread::spawn(move || {
         #[cfg(windows)]
         let result = focus_sys::winget::install(&item.winget_id);
         #[cfg(not(windows))]
         let result: Result<(), String> = Err("Windows only".to_owned());
-        let payload = serde_json::json!({ "id": item.id, "ok": result.is_ok(), "error": result.err() });
+        let payload =
+            serde_json::json!({ "id": item.id, "ok": result.is_ok(), "error": result.err() });
         tracing::info!("install finished: {payload}");
         let _ = app.emit("install-finished", payload);
     });
@@ -285,10 +307,15 @@ pub fn install_app(app: AppHandle, id: String) -> CmdResult<()> {
 #[tauri::command]
 pub fn open_official_page(id: String) -> CmdResult<()> {
     let apps = catalog::load().map_err(|e| AppError::Other(e.to_string()))?;
-    let item = apps.into_iter().find(|a| a.id == id).ok_or(AppError::UnknownEntry(id))?;
+    let item = apps
+        .into_iter()
+        .find(|a| a.id == id)
+        .ok_or(AppError::UnknownEntry(id))?;
     #[cfg(windows)]
-    focus_sys::launch::start(&LaunchTarget::Website { url: item.official_page })
-        .map_err(|e| AppError::Other(e.to_string()))?;
+    focus_sys::launch::start(&LaunchTarget::Website {
+        url: item.official_page,
+    })
+    .map_err(|e| AppError::Other(e.to_string()))?;
     #[cfg(not(windows))]
     drop(item);
     Ok(())
@@ -311,8 +338,11 @@ pub async fn system_report() -> Option<SystemReport> {
     {
         tauri::async_runtime::spawn_blocking(|| {
             let snapshot = focus_sys::scan::snapshot();
-            let mut top: Vec<(String, u64)> =
-                snapshot.processes.iter().map(|p| (p.name.clone(), p.memory)).collect();
+            let mut top: Vec<(String, u64)> = snapshot
+                .processes
+                .iter()
+                .map(|p| (p.name.clone(), p.memory))
+                .collect();
             top.sort_by_key(|(_, memory)| std::cmp::Reverse(*memory));
             top.truncate(10);
             SystemReport {
@@ -336,7 +366,8 @@ pub fn set_autostart(enabled: Option<bool>) -> CmdResult<bool> {
     {
         if let Some(enabled) = enabled {
             let exe = std::env::current_exe()?;
-            focus_sys::shell::set_autostart(enabled, &exe).map_err(|e| AppError::Other(e.to_string()))?;
+            focus_sys::shell::set_autostart(enabled, &exe)
+                .map_err(|e| AppError::Other(e.to_string()))?;
         }
         Ok(focus_sys::shell::autostart_enabled())
     }
@@ -367,7 +398,8 @@ pub fn install_guardian() -> CmdResult<()> {
     #[cfg(windows)]
     {
         let exe = std::env::current_exe()?.with_file_name("focus-guardian.exe");
-        focus_sys::launch::run_elevated(&exe, "install").map_err(|e| AppError::Other(e.to_string()))?;
+        focus_sys::launch::run_elevated(&exe, "install")
+            .map_err(|e| AppError::Other(e.to_string()))?;
     }
     Ok(())
 }
@@ -389,7 +421,8 @@ pub fn controller_status(state: Shared<'_>) -> Option<ControllerStatus> {
         let env = focus_input::modes::Environment {
             steam_running: focus_sys::scan::is_running("steam"),
             vigem_present: focus_input::source::vigem_present(),
-            hidhide_present: Path::new(r"C:\Program Files\Nefarius Software Solutions\HidHide").is_dir(),
+            hidhide_present: Path::new(r"C:\Program Files\Nefarius Software Solutions\HidHide")
+                .is_dir(),
         };
         let mode = focus_input::modes::resolve_mode(family, env, state.settings().controller_mode);
         Some(ControllerStatus { family, env, mode })
@@ -409,7 +442,9 @@ pub fn power_action(app: AppHandle, action: String) -> CmdResult<()> {
         #[cfg(windows)]
         "restart" | "shutdown" => {
             let flag = if action == "restart" { "/r" } else { "/s" };
-            std::process::Command::new("shutdown").args([flag, "/t", "0"]).spawn()?;
+            std::process::Command::new("shutdown")
+                .args([flag, "/t", "0"])
+                .spawn()?;
         }
         other => return Err(AppError::Other(format!("unknown action {other}"))),
     }
@@ -420,7 +455,10 @@ pub fn power_action(app: AppHandle, action: String) -> CmdResult<()> {
 pub fn audio_sessions() -> Vec<(u32, f32)> {
     #[cfg(windows)]
     {
-        focus_sys::audio::sessions().into_iter().map(|s| (s.pid, s.volume)).collect()
+        focus_sys::audio::sessions()
+            .into_iter()
+            .map(|s| (s.pid, s.volume))
+            .collect()
     }
     #[cfg(not(windows))]
     Vec::new()

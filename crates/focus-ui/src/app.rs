@@ -133,7 +133,10 @@ impl Ctx {
     pub fn launch(&self, id: String) {
         let ctx = *self;
         ctx.wipe.set(true);
-        set_timeout(move || ctx.wipe.set(false), std::time::Duration::from_millis(500));
+        set_timeout(
+            move || ctx.wipe.set(false),
+            std::time::Duration::from_millis(500),
+        );
         spawn_local(async move {
             let started = invoke::<Value>("play", json!({ "id": id })).await;
             match started {
@@ -147,7 +150,10 @@ impl Ctx {
     }
 
     fn sounds(&self) -> bool {
-        self.settings.read_untracked().as_ref().is_some_and(|s| s.sounds)
+        self.settings
+            .read_untracked()
+            .as_ref()
+            .is_some_and(|s| s.sounds)
     }
 
     /// Joue un son si l'utilisateur le veut.
@@ -176,10 +182,20 @@ fn refresh_running(ctx: Ctx) {
 }
 
 fn apply_appearance(settings: &Settings) {
-    let Some(root) = web_sys::window().and_then(|w| w.document()).and_then(|d| d.document_element()) else {
+    let Some(root) = web_sys::window()
+        .and_then(|w| w.document())
+        .and_then(|d| d.document_element())
+    else {
         return;
     };
-    let _ = root.set_attribute("data-motion", if settings.reduce_motion { "reduced" } else { "full" });
+    let _ = root.set_attribute(
+        "data-motion",
+        if settings.reduce_motion {
+            "reduced"
+        } else {
+            "full"
+        },
+    );
     let hour = js_sys::Date::new_0().get_hours();
     let light = settings.auto_theme && (7..19).contains(&hour);
     let _ = root.set_attribute("data-theme", if light { "light" } else { "dark" });
@@ -238,14 +254,21 @@ fn horizontal(ctx: Ctx, direction: Direction) {
 }
 
 fn ctx_rtl() -> bool {
-    use_context::<I18n>().and_then(|i18n| i18n.current()).is_some_and(|lang| lang.rtl)
+    use_context::<I18n>()
+        .and_then(|i18n| i18n.current())
+        .is_some_and(|lang| lang.rtl)
 }
 
 fn cycle_filter(ctx: Ctx, delta: i32) {
     if ctx.screens.read_untracked().last() != Some(&Screen::Home) {
         return;
     }
-    let order = [None, Some(EntryKind::Game), Some(EntryKind::Software), Some(EntryKind::Social)];
+    let order = [
+        None,
+        Some(EntryKind::Game),
+        Some(EntryKind::Software),
+        Some(EntryKind::Social),
+    ];
     let current = ctx.filter.get_untracked();
     let index = order.iter().position(|item| *item == current).unwrap_or(0) as i32;
     let next = (index + delta).rem_euclid(order.len() as i32) as usize;
@@ -259,16 +282,37 @@ fn on_key(ctx: Ctx, event: &KeyboardEvent) {
     ctx.device.set(Device::Keyboard);
     let key = event.key();
     let handled = match key.as_str() {
-        "ArrowUp" => { step(ctx, Direction::Up); true }
-        "ArrowDown" => { step(ctx, Direction::Down); true }
-        "ArrowLeft" => { horizontal(ctx, Direction::Left); true }
-        "ArrowRight" => { horizontal(ctx, Direction::Right); true }
-        "Escape" => { ctx.back(); true }
-        "Tab" if ctx.screens.read_untracked().last() == Some(&Screen::Home) && !ctx.panel.get_untracked() => {
+        "ArrowUp" => {
+            step(ctx, Direction::Up);
+            true
+        }
+        "ArrowDown" => {
+            step(ctx, Direction::Down);
+            true
+        }
+        "ArrowLeft" => {
+            horizontal(ctx, Direction::Left);
+            true
+        }
+        "ArrowRight" => {
+            horizontal(ctx, Direction::Right);
+            true
+        }
+        "Escape" => {
+            ctx.back();
+            true
+        }
+        "Tab"
+            if ctx.screens.read_untracked().last() == Some(&Screen::Home)
+                && !ctx.panel.get_untracked() =>
+        {
             cycle_filter(ctx, if event.shift_key() { -1 } else { 1 });
             true
         }
-        "F1" => { toggle_panel(ctx); true }
+        "F1" => {
+            toggle_panel(ctx);
+            true
+        }
         _ => false,
     };
     if handled {
@@ -278,7 +322,9 @@ fn on_key(ctx: Ctx, event: &KeyboardEvent) {
 
 #[component]
 pub fn App() -> impl IntoView {
-    let system = web_sys::window().and_then(|w| w.navigator().language()).unwrap_or_default();
+    let system = web_sys::window()
+        .and_then(|w| w.navigator().language())
+        .unwrap_or_default();
     let i18n = I18n::new(best_match(&system));
     provide_context(i18n);
     let ctx = Ctx {
@@ -300,19 +346,37 @@ pub fn App() -> impl IntoView {
 
     Effect::new(move |_| {
         let lang = i18n.current();
-        if let Some(root) = web_sys::window().and_then(|w| w.document()).and_then(|d| d.document_element()) {
+        if let Some(root) = web_sys::window()
+            .and_then(|w| w.document())
+            .and_then(|d| d.document_element())
+        {
             let _ = root.set_attribute("lang", lang.map_or("en", |l| l.code));
-            let _ = root.set_attribute("dir", if lang.is_some_and(|l| l.rtl) { "rtl" } else { "ltr" });
+            let _ = root.set_attribute(
+                "dir",
+                if lang.is_some_and(|l| l.rtl) {
+                    "rtl"
+                } else {
+                    "ltr"
+                },
+            );
         }
     });
     Effect::new(move |_| {
-        if let Some(body) = web_sys::window().and_then(|w| w.document()).and_then(|d| d.body()) {
-            let _ = body.class_list().toggle_with_force("pad", ctx.device.get() == Device::Pad);
+        if let Some(body) = web_sys::window()
+            .and_then(|w| w.document())
+            .and_then(|d| d.body())
+        {
+            let _ = body
+                .class_list()
+                .toggle_with_force("pad", ctx.device.get() == Device::Pad);
         }
     });
     Effect::new(move |previous: Option<()>| {
         if ctx.toast.get().is_some() {
-            set_timeout(move || ctx.toast.set(None), std::time::Duration::from_secs(4));
+            set_timeout(
+                move || ctx.toast.set(None),
+                std::time::Duration::from_secs(4),
+            );
         }
         previous.unwrap_or(())
     });
@@ -353,7 +417,8 @@ pub fn App() -> impl IntoView {
         let family = value.as_string().unwrap_or_else(|| "other".to_owned());
         if family != "other" && family != ctx.family.get_untracked() {
             let name = i18n.t(&format!("family-{family}"));
-            ctx.toast.set(Some(i18n.ts("ctl-connected", "family", &name)));
+            ctx.toast
+                .set(Some(i18n.ts("ctl-connected", "family", &name)));
         }
         ctx.family.set(family);
     });
@@ -368,8 +433,13 @@ pub fn App() -> impl IntoView {
         }
     });
     api::listen("install-finished", move |value| {
-        let ok = js_sys::Reflect::get(&value, &"ok".into()).ok().and_then(|v| v.as_bool()).unwrap_or(false);
-        ctx.toast.set(Some(if ok { "store-done" } else { "store-failed" }.to_owned()));
+        let ok = js_sys::Reflect::get(&value, &"ok".into())
+            .ok()
+            .and_then(|v| v.as_bool())
+            .unwrap_or(false);
+        ctx.toast.set(Some(
+            if ok { "store-done" } else { "store-failed" }.to_owned(),
+        ));
         ctx.reload();
     });
 
@@ -377,8 +447,10 @@ pub fn App() -> impl IntoView {
     let closure = Closure::<dyn FnMut(KeyboardEvent)>::new(move |event| on_key(ctx, &event));
     let mouse = Closure::<dyn FnMut()>::new(move || ctx.device.set(Device::Mouse));
     if let Some(window) = web_sys::window() {
-        let _ = window.add_event_listener_with_callback("keydown", closure.as_ref().unchecked_ref());
-        let _ = window.add_event_listener_with_callback("mousemove", mouse.as_ref().unchecked_ref());
+        let _ =
+            window.add_event_listener_with_callback("keydown", closure.as_ref().unchecked_ref());
+        let _ =
+            window.add_event_listener_with_callback("mousemove", mouse.as_ref().unchecked_ref());
     }
     keydown.set(Some(closure));
     std::mem::forget(keydown);

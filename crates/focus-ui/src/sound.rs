@@ -30,7 +30,9 @@ fn try_play(frequency: f32, length: f64) -> Option<()> {
     oscillator.frequency().set_value(frequency);
     let now = context.current_time();
     gain.gain().set_value_at_time(0.05, now).ok()?;
-    gain.gain().exponential_ramp_to_value_at_time(0.0001, now + length).ok()?;
+    gain.gain()
+        .exponential_ramp_to_value_at_time(0.0001, now + length)
+        .ok()?;
     oscillator.connect_with_audio_node(&gain).ok()?;
     gain.connect_with_audio_node(&context.destination()).ok()?;
     oscillator.start().ok()?;

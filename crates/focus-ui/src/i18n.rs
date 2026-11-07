@@ -34,7 +34,7 @@ macro_rules! lang {
 /// Langues livrées. Voir `docs/langues.md`.
 pub const LANGS: &[Lang] = &[
     lang!("en", "English", false, true),
-    lang!("fr", "Français", false, true),
+    lang!("fr", "Français", false, false),
     lang!("es", "Español", false, false),
     lang!("de", "Deutsch", false, false),
     lang!("it", "Italiano", false, false),
@@ -52,7 +52,11 @@ pub fn best_match(code: &str) -> &'static str {
     LANGS
         .iter()
         .find(|lang| lang.code.eq_ignore_ascii_case(code))
-        .or_else(|| LANGS.iter().find(|lang| lower.starts_with(&lang.code[..2].to_lowercase())))
+        .or_else(|| {
+            LANGS
+                .iter()
+                .find(|lang| lower.starts_with(&lang.code[..2].to_lowercase()))
+        })
         .map_or("en", |lang| lang.code)
 }
 
@@ -64,7 +68,9 @@ fn bundle(lang: &Lang) -> Option<Bundle> {
     // Sans ces marques, les paramètres se mélangent mal dans une phrase RTL... mais
     // elles s'affichent dans certains cas : la direction est déjà gérée par la page.
     bundle.set_use_isolating(false);
-    bundle.add_resource(FluentResource::try_new(lang.source.to_owned()).ok()?).ok()?;
+    bundle
+        .add_resource(FluentResource::try_new(lang.source.to_owned()).ok()?)
+        .ok()?;
     Some(bundle)
 }
 
@@ -79,8 +85,10 @@ pub struct I18n {
 impl I18n {
     /// Charge toutes les langues.
     pub fn new(initial: &'static str) -> Self {
-        let bundles: HashMap<_, _> =
-            LANGS.iter().filter_map(|lang| Some((lang.code, bundle(lang)?))).collect();
+        let bundles: HashMap<_, _> = LANGS
+            .iter()
+            .filter_map(|lang| Some((lang.code, bundle(lang)?)))
+            .collect();
         Self {
             lang: RwSignal::new(initial),
             bundles: StoredValue::new_local(Rc::new(bundles)),
@@ -97,7 +105,11 @@ impl I18n {
                     let bundle = bundles.get(lang)?;
                     let pattern = bundle.get_message(key)?.value()?;
                     let mut errors = Vec::new();
-                    Some(bundle.format_pattern(pattern, args, &mut errors).into_owned())
+                    Some(
+                        bundle
+                            .format_pattern(pattern, args, &mut errors)
+                            .into_owned(),
+                    )
                 })
                 .unwrap_or_default()
         })
@@ -123,7 +135,12 @@ impl I18n {
     }
 
     /// Texte à deux paramètres.
-    pub fn ts2(&self, key: &str, first: (&'static str, &str), second: (&'static str, &str)) -> String {
+    pub fn ts2(
+        &self,
+        key: &str,
+        first: (&'static str, &str),
+        second: (&'static str, &str),
+    ) -> String {
         let mut args = FluentArgs::new();
         args.set(first.0, first.1.to_owned());
         args.set(second.0, second.1.to_owned());

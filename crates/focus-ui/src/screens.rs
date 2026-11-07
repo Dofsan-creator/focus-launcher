@@ -1,6 +1,8 @@
 //! Écrans de l'interface. Aucun texte en dur : tout passe par les traductions.
 
-use crate::api::{self, invoke, CatalogItem, ControllerStatus, DirItem, Merged, Preview, SystemReport};
+use crate::api::{
+    self, invoke, CatalogItem, ControllerStatus, DirItem, Merged, Preview, SystemReport,
+};
 use crate::app::{after_render, Ctx, Device, Screen, TextEdit};
 use crate::i18n::{use_i18n, LANGS};
 use crate::keyboard;
@@ -16,7 +18,10 @@ fn ctx() -> Ctx {
 }
 
 fn hue(title: &str) -> u32 {
-    title.chars().fold(7_u32, |sum, c| sum.wrapping_mul(31).wrapping_add(c as u32)) % 360
+    title
+        .chars()
+        .fold(7_u32, |sum, c| sum.wrapping_mul(31).wrapping_add(c as u32))
+        % 360
 }
 
 fn store_name(store: Store) -> &'static str {
@@ -170,7 +175,7 @@ fn HomeScreen() -> impl IntoView {
                     20 - offset.abs()
                 );
                 let id = item.entry.id.clone();
-                let title = item.entry.title.clone();
+                let title = item.entry.title;
                 view! {
                     <button class="f card" style=style data-card=index data-auto=(offset == 0).then_some("")
                         tabindex=if offset == 0 { "0" } else { "-1" }
@@ -189,7 +194,9 @@ fn HomeScreen() -> impl IntoView {
             .collect_view()
     };
     let background = move || {
-        selected_entry().map_or(32, |item| hue(&item.entry.title)).to_string()
+        selected_entry()
+            .map_or(32, |item| hue(&item.entry.title))
+            .to_string()
     };
     view! {
         <main class="screen home" style:--hue=background>
@@ -230,7 +237,12 @@ fn HomeScreen() -> impl IntoView {
 fn DetailScreen(id: String) -> impl IntoView {
     let (ctx, i18n) = (ctx(), use_i18n());
     let lookup = id.clone();
-    let item = Memo::new(move |_| ctx.entries.get().into_iter().find(|item| item.entry.id == lookup));
+    let item = Memo::new(move |_| {
+        ctx.entries
+            .get()
+            .into_iter()
+            .find(|item| item.entry.id == lookup)
+    });
     let (play_id, fav_id, del_id) = (id.clone(), id.clone(), id);
     let favorite = move || item.get().is_some_and(|item| item.entry.favorite);
     view! {
@@ -291,7 +303,11 @@ fn PrepareScreen(id: String) -> impl IntoView {
     let preview = RwSignal::new(None::<Preview>);
     let request = id.clone();
     spawn_local(async move {
-        preview.set(invoke("preview_session", json!({ "id": request })).await.ok());
+        preview.set(
+            invoke("preview_session", json!({ "id": request }))
+                .await
+                .ok(),
+        );
         after_render(nav::focus_first);
     });
     view! {
@@ -359,7 +375,11 @@ fn SettingsScreen() -> impl IntoView {
     };
     detect();
     spawn_local(async move {
-        autostart.set(invoke("set_autostart", json!({ "enabled": null })).await.unwrap_or(false));
+        autostart.set(
+            invoke("set_autostart", json!({ "enabled": null }))
+                .await
+                .unwrap_or(false),
+        );
         guardian.set(invoke("guardian_status", json!({})).await.unwrap_or(false));
     });
     let setting = move |read: fn(&api::Settings) -> bool| {
@@ -368,7 +388,7 @@ fn SettingsScreen() -> impl IntoView {
     macro_rules! toggle {
         ($label:literal, $field:ident) => {
             view! { <Toggle label=$label value=setting(|s| s.$field)
-                on_change=Callback::new(move |_| ctx.update_settings(|s| s.$field = !s.$field))/> }
+            on_change=Callback::new(move |_| ctx.update_settings(|s| s.$field = !s.$field))/> }
         };
     }
     let lang_buttons = LANGS.iter().map(|lang| view! {
@@ -503,12 +523,18 @@ fn parent_of(path: &str) -> Option<String> {
     let trimmed = path.trim_end_matches('\\');
     let cut = trimmed.rfind('\\')?;
     let parent = &trimmed[..cut];
-    Some(if parent.len() == 2 { format!("{parent}\\") } else { parent.to_owned() })
+    Some(if parent.len() == 2 {
+        format!("{parent}\\")
+    } else {
+        parent.to_owned()
+    })
 }
 
 fn title_from(path: &str) -> String {
     let name = path.rsplit('\\').next().unwrap_or(path);
-    name.rsplit_once('.').map_or(name, |(stem, _)| stem).to_owned()
+    name.rsplit_once('.')
+        .map_or(name, |(stem, _)| stem)
+        .to_owned()
 }
 
 #[component]
@@ -636,7 +662,7 @@ fn StoresScreen() -> impl IntoView {
                     view! {
                         <div class="stack">
                             <strong>{name}</strong>
-                            <span class="muted">{app.publisher.clone()}</span>
+                            <span class="muted">{app.publisher}</span>
                             <Show when=move || winget>
                                 {
                                     let install = install.clone();
@@ -662,7 +688,7 @@ fn StoresScreen() -> impl IntoView {
             <Show when=move || asking.get().is_some() && ctx.dialog_open.get()>
                 {move || asking.get().map(|app| {
                     let question = i18n.ts2("store-confirm", ("name", &app.name), ("publisher", &app.publisher));
-                    let (id, name) = (app.id.clone(), app.name.clone());
+                    let (id, name) = (app.id, app.name);
                     view! {
                         <div class="dialog"><div>
                             <h2>{question}</h2>
@@ -751,7 +777,7 @@ pub fn QuickPanel() -> impl IntoView {
                             ctx.dialog_open.set(true);
                             after_render(nav::focus_first);
                         }>{move || i18n.t("panel-close-entry")}</button>
-                        <Show when=move || closing.get() > 0 && ctx.dialog_open.get()>
+                        <Show when=move || closing.get() != 0 && ctx.dialog_open.get()>
                             {
                                 let question = question.clone();
                                 view! {
@@ -815,7 +841,8 @@ pub fn TextOverlay() -> impl IntoView {
             after_render(nav::focus_first);
         }
     });
-    move || ctx.editing.get().map(|edit| {
+    move || {
+        ctx.editing.get().map(|edit| {
         let value = edit.value;
         let rows = keyboard::layout(i18n.lang.get()).iter().map(|row| {
             let keys = row.chars().map(|letter| view! {
@@ -835,16 +862,23 @@ pub fn TextOverlay() -> impl IntoView {
             </section>
         }
     })
+    }
 }
 
 /// Message temporaire. Une clé de traduction connue est traduite.
 #[component]
 pub fn Toast() -> impl IntoView {
     let (ctx, i18n) = (ctx(), use_i18n());
-    move || ctx.toast.get().map(|text| {
-        let shown = if text.contains(' ') { text } else { i18n.t(&text) };
-        view! { <div class="toast" role="status">{shown}</div> }
-    })
+    move || {
+        ctx.toast.get().map(|text| {
+            let shown = if text.contains(' ') {
+                text
+            } else {
+                i18n.t(&text)
+            };
+            view! { <div class="toast" role="status">{shown}</div> }
+        })
+    }
 }
 
 /// Barre d'aide : les symboles suivent le dernier périphérique et la manette.
@@ -852,7 +886,9 @@ pub fn Toast() -> impl IntoView {
 pub fn Hints() -> impl IntoView {
     let (ctx, i18n) = (ctx(), use_i18n());
     let glyph = move |slot: usize| -> String {
-        let style = ctx.settings.with(|s| s.as_ref().map_or("auto".to_owned(), |s| s.glyphs.clone()));
+        let style = ctx
+            .settings
+            .with(|s| s.as_ref().map_or("auto".to_owned(), |s| s.glyphs.clone()));
         let family = ctx.family.get();
         let shapes = style == "playStation" || (style == "auto" && family == "playStation");
         match ctx.device.get() {

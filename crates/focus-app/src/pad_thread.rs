@@ -41,7 +41,9 @@ pub fn spawn(app: AppHandle, state: Arc<App>) {
             let xbox = (0..4).find_map(read_xinput);
             // Dernière manette utilisée : l'activité décide de la manette active.
             let (active, family) = match (&sony, &xbox) {
-                (Some(s), _) if s.has_activity() || xbox.is_none() => (s.clone(), Some(Family::PlayStation)),
+                (Some(s), _) if s.has_activity() || xbox.is_none() => {
+                    (s.clone(), Some(Family::PlayStation))
+                }
                 (_, Some(x)) => (x.clone(), Some(Family::Xbox)),
                 _ => (PadState::default(), last_family.filter(|_| hid.is_some())),
             };

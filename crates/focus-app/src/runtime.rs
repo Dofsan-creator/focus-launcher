@@ -192,7 +192,8 @@ impl App {
         let ctx = SessionContext {
             kind: entry.kind,
             store: entry.store,
-            steam_input_active: settings.controller_mode == Some(focus_input::modes::Mode::SteamInput),
+            steam_input_active: settings.controller_mode
+                == Some(focus_input::modes::Mode::SteamInput),
             keep_social: settings.keep_social,
         };
         let optimize = matches!(entry.kind, EntryKind::Game | EntryKind::Software);
@@ -210,8 +211,15 @@ impl App {
     }
 
     /// Prépare, optimise et lance. La surveillance continue dans un fil dédié.
-    pub fn play(self: &std::sync::Arc<Self>, id: &str, on_end: impl FnOnce(SessionEnd) + Send + 'static) -> Result<(), AppError> {
-        let entry = self.repo().get(id)?.ok_or_else(|| AppError::UnknownEntry(id.to_owned()))?;
+    pub fn play(
+        self: &std::sync::Arc<Self>,
+        id: &str,
+        on_end: impl FnOnce(SessionEnd) + Send + 'static,
+    ) -> Result<(), AppError> {
+        let entry = self
+            .repo()
+            .get(id)?
+            .ok_or_else(|| AppError::UnknownEntry(id.to_owned()))?;
         {
             let mut running = lock(&self.running);
             if running.is_some() {
@@ -221,7 +229,11 @@ impl App {
                 entry_id: entry.id.clone(),
                 title: entry.title.clone(),
                 kind: entry.kind,
-                watched: entry.install_dir.as_deref().map(exe_names).unwrap_or_default(),
+                watched: entry
+                    .install_dir
+                    .as_deref()
+                    .map(exe_names)
+                    .unwrap_or_default(),
                 real: false,
                 pid: None,
             });
@@ -257,7 +269,8 @@ impl App {
             .map(|client| Box::new(client) as Box<dyn ServiceControl>);
         // Sans gardien, les arrêts de services sont simplement retirés du plan.
         if guardian.is_none() {
-            plan.steps.retain(|step| !matches!(step, Step::StopService { .. }));
+            plan.steps
+                .retain(|step| !matches!(step, Step::StopService { .. }));
         }
         let mut ops = WinOps::new(guardian);
         if real {
@@ -347,7 +360,9 @@ fn may_boost(entry: &Entry) -> bool {
 fn wait_for_exit(running: Option<&Running>) {
     let Some(running) = running else { return };
     let alive = |running: &Running| {
-        let pid_alive = running.pid.is_some_and(|pid| focus_sys::scan::process_start_time(pid).is_some());
+        let pid_alive = running
+            .pid
+            .is_some_and(|pid| focus_sys::scan::process_start_time(pid).is_some());
         pid_alive || focus_sys::scan::any_running(&running.watched)
     };
     let start = Instant::now();
@@ -370,14 +385,19 @@ fn wait_for_exit(running: Option<&Running>) {
 /// Noms des exécutables d'un dossier, pour suivre le jeu sans ouvrir son processus.
 fn exe_names(dir: &str) -> Vec<String> {
     fn walk(dir: &Path, depth: usize, out: &mut Vec<String>) {
-        let Ok(entries) = std::fs::read_dir(dir) else { return };
+        let Ok(entries) = std::fs::read_dir(dir) else {
+            return;
+        };
         for entry in entries.flatten() {
             let path = entry.path();
             if path.is_dir() {
                 if depth > 0 {
                     walk(&path, depth - 1, out);
                 }
-            } else if path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("exe")) {
+            } else if path
+                .extension()
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("exe"))
+            {
                 if let Some(name) = path.file_name() {
                     out.push(focus_core::whitelist::normalize(&name.to_string_lossy()));
                 }

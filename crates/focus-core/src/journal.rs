@@ -107,10 +107,12 @@ impl JournalStore {
     pub fn write(&self, journal: &Journal) -> Result<(), JournalError> {
         let bytes = serde_json::to_vec_pretty(journal)?;
         let tmp = self.path.with_extension("json.tmp");
-        let mut file = fs::File::create(&tmp)?;
-        file.write_all(&bytes)?;
-        file.sync_all()?;
-        drop(file);
+        {
+            // Le fichier est fermé à la fin du bloc, avant le renommage.
+            let mut file = fs::File::create(&tmp)?;
+            file.write_all(&bytes)?;
+            file.sync_all()?;
+        }
         fs::rename(&tmp, &self.path)?;
         Ok(())
     }

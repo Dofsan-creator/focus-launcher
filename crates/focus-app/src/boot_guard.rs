@@ -46,7 +46,9 @@ pub fn on_start(data: &Path) -> BootStatus {
     if disable {
         #[cfg(windows)]
         if let Ok(exe) = std::env::current_exe() {
-            if focus_sys::shell::autostart_enabled() && focus_sys::shell::set_autostart(false, &exe).is_ok() {
+            if focus_sys::shell::autostart_enabled()
+                && focus_sys::shell::set_autostart(false, &exe).is_ok()
+            {
                 status.autostart_disabled = true;
             }
         }

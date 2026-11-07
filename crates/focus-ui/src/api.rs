@@ -109,11 +109,6 @@ fn tauri() -> Option<JsValue> {
     (!value.is_undefined()).then_some(value)
 }
 
-/// Vrai hors de Tauri.
-pub fn is_demo() -> bool {
-    tauri().is_none()
-}
-
 /// Appelle une commande.
 pub async fn invoke<T: DeserializeOwned>(command: &str, args: Value) -> Result<T, String> {
     let Some(tauri) = tauri() else {
@@ -143,8 +138,12 @@ pub fn listen(event: &str, callback: impl Fn(JsValue) + 'static) {
     let closure = Closure::<dyn Fn(JsValue)>::new(move |value: JsValue| {
         callback(Reflect::get(&value, &"payload".into()).unwrap_or(JsValue::NULL));
     });
-    let Ok(module) = Reflect::get(&tauri, &"event".into()) else { return };
-    let Ok(listen) = Reflect::get(&module, &"listen".into()) else { return };
+    let Ok(module) = Reflect::get(&tauri, &"event".into()) else {
+        return;
+    };
+    let Ok(listen) = Reflect::get(&module, &"listen".into()) else {
+        return;
+    };
     let listen: Function = listen.unchecked_into();
     let _ = listen.call2(&module, &event.into(), closure.as_ref().unchecked_ref());
     // L'écouteur vit aussi longtemps que l'application.
@@ -177,13 +176,19 @@ fn demo(command: &str) -> Value {
             demo_entry("demo:6", "Sculpt Studio", "software", "manual", 8),
             demo_entry("demo:7", "Voice Room", "social", "manual", 0),
         ]),
-        "refresh_library" | "list_drives" | "list_dir" | "suggest_executables" | "audio_sessions" => json!([]),
+        "refresh_library"
+        | "list_drives"
+        | "list_dir"
+        | "suggest_executables"
+        | "audio_sessions" => json!([]),
         "preview_session" => json!({
             "plan": { "steps": [{ "step": "keepAwake" }], "askUser": [], "simulationOnly": true },
             "simulation": true, "guardian": false
         }),
         "running_entry" => Value::Null,
-        "catalog" => json!([{ "id": "discord", "name": "Discord", "category": "social", "publisher": "Discord", "winget": true }]),
+        "catalog" => {
+            json!([{ "id": "discord", "name": "Discord", "category": "social", "publisher": "Discord", "winget": true }])
+        }
         "controller_status" => json!({ "family": "other", "mode": "native" }),
         "system_report" => json!({
             "hardware": { "cpu": "Demo CPU", "memory": 34359738368_u64 },
