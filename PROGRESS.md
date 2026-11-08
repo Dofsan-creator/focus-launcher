@@ -48,9 +48,9 @@ Légende : ✅ prouvé par test ou commande, 🧑 à faire par toi (matériel ou
 | 13 | Panneau rapide sur chaque type de plein écran | 🧑 matrice DX11, DX12, Vulkan, anticheat, fenêtré |
 | 14 | Fermeture d'un jeu, 3 fois | 🧑 |
 | 16 | Aucune injection | ✅ revue : aucune API d'injection, aucun handle sur un jeu de boutique |
-| 17 | Jeux détectés sans action, au démarrage à froid | 🧑 |
+| 17 | Jeux détectés sans action, au démarrage à froid | ✅ sur ce PC le 2026-11-08 : Yu-Gi-Oh! Master Duel (Steam), Fortnite et Delta Force (Epic). Exécutable lancé 10 s, 36 Mo, journal sans erreur |
 | 18, 22 | Ajout à la manette seule | 🧑 |
-| 19, 29 | Graphe de focus complet, trois entrées | ✅ algorithme testé ; 🧑 parcours manuel |
+| 19, 29 | Graphe de focus complet, trois entrées | ✅ algorithme testé, et parcours automatique dans Chrome : 9/9 éléments de l'accueil atteints aux flèches, en arabe (RTL), panneau rapide qui prend et rend le focus ; 🧑 parcours manuel de chaque écran à la manette |
 | 20, 27 | Revue d'originalité validée | 🧑 sur captures |
 | 21 | Aucun point critique ou haut ouvert dans `AUDIT.md` | ⚠️ |
 | 23 | Un profil Logiciel ne ferme ni ne suspend rien de protégé | ✅ |
