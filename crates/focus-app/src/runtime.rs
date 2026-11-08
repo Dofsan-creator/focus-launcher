@@ -69,6 +69,9 @@ pub struct Running {
     pub watched: Vec<String>,
     /// La session a appliqué un plan réel.
     pub real: bool,
+    /// Boutique : Steam Input prend le relais pour les jeux Steam.
+    #[serde(skip)]
+    pub store: Store,
     /// Pid direct, s'il y en a un.
     #[serde(skip)]
     pub pid: Option<u32>,
@@ -235,6 +238,7 @@ impl App {
                     .map(exe_names)
                     .unwrap_or_default(),
                 real: false,
+                store: entry.store,
                 pid: None,
             });
         }

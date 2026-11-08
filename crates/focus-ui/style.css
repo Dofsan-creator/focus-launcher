@@ -87,20 +87,24 @@ button, input { font: inherit; color: inherit; }
 [dir="rtl"] .stage { transform: scaleX(-1); }
 [dir="rtl"] .card > * { transform: scaleX(-1); }
 .card {
-  position: absolute; width: 19vh; height: 26vh; margin-left: -9.5vh; bottom: 11vh;
+  position: absolute; width: 19vh; height: 26vh; left: -9.5vh; bottom: 11vh;
   padding: 0; border-radius: 8px; overflow: hidden; display: grid; place-items: end start;
-  background: linear-gradient(160deg, hsl(var(--h) 45% 34%), hsl(calc(var(--h) + 40) 45% 15%));
-  transform-origin: 50% 180vh;
+  transform-origin: 50% 50%;
   transition: transform var(--slow) var(--ease), opacity var(--slow);
-  transform: rotate(var(--a)) scale(var(--s));
+  transform: translate(var(--x), var(--y)) rotate(var(--a)) scale(var(--s));
   opacity: var(--o);
 }
-.card:focus { transform: rotate(var(--a)) scale(var(--s)); border-color: transparent; }
+/* La carte garde son dégradé : le focus est signalé par l'iris, pas par le fond. */
+.card, .card:hover, .card:focus {
+  background: linear-gradient(160deg, hsl(var(--h) 45% 34%), hsl(calc(var(--h) + 40) 45% 15%));
+  border-color: transparent;
+}
+.card:focus { transform: translate(var(--x), var(--y)) rotate(var(--a)) scale(var(--s)); box-shadow: 0 18px 50px #000a; }
 .card span { padding: 10px; font-weight: 600; line-height: 1.15; text-shadow: 0 1px 6px #0008; color: #fff; }
 .iris {
   position: absolute; width: 40vh; height: 40vh; left: -20vh; bottom: 4vh; border-radius: 50%; pointer-events: none;
-  background: repeating-conic-gradient(from 11deg, #0000 0 38deg, color-mix(in srgb, var(--accent) 80%, transparent) 38deg 45deg);
-  mask: radial-gradient(closest-side, #0000 calc(100% - 13px), #000 calc(100% - 12px));
+  background: repeating-conic-gradient(from 11deg, #0000 0 12deg, color-mix(in srgb, var(--accent) 85%, transparent) 12deg 45deg);
+  mask: radial-gradient(closest-side, #0000 calc(100% - 22px), #000 calc(100% - 21px));
   animation: turn var(--slow) var(--ease);
 }
 @keyframes turn { from { transform: rotate(-45deg); opacity: .4; } }

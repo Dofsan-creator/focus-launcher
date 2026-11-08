@@ -166,11 +166,19 @@ fn HomeScreen() -> impl IntoView {
             .filter(|(index, _)| (*index as i32 - selected).abs() <= 6)
             .map(|(index, item)| {
                 let offset = index as i32 - selected;
-                let angle = offset as f64 * 9.0;
-                let scale = if offset == 0 { 1.2 } else { 0.92 - f64::from(offset.abs()) * 0.03 };
+                // Position sur l'arc : rayon de 110 % de la hauteur d'écran, centre sous l'écran.
+                let angle = offset as f64 * 11.0;
+                let radius = 110.0;
+                let x = angle.to_radians().sin() * radius;
+                let y = (1.0 - angle.to_radians().cos()) * radius;
+                let scale = if offset == 0 {
+                    1.2
+                } else {
+                    0.92 - f64::from(offset.abs()) * 0.03
+                };
                 let opacity = 1.0 - f64::from(offset.abs()) * 0.13;
                 let style = format!(
-                    "--a:{angle}deg;--s:{scale};--o:{opacity};--h:{};z-index:{}",
+                    "--x:{x:.2}vh;--y:{y:.2}vh;--a:{angle}deg;--s:{scale};--o:{opacity};--h:{};z-index:{}",
                     hue(&item.entry.title),
                     20 - offset.abs()
                 );
