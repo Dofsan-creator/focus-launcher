@@ -117,6 +117,42 @@ pub struct SystemReport {
     pub top: Vec<(String, u64)>,
 }
 
+/// Jeu que Steam télécharge ou met à jour.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SteamDownload {
+    pub appid: String,
+    pub name: String,
+    pub done: u64,
+    pub total: u64,
+}
+
+/// Installation lancée depuis Focus.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InstallJob {
+    pub id: String,
+    pub name: String,
+    pub state: String,
+}
+
+/// Tout ce qui se télécharge ou s'installe.
+#[derive(Debug, Clone, Default, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct Downloads {
+    pub steam: Vec<SteamDownload>,
+    pub installs: Vec<InstallJob>,
+}
+
+/// Mise à jour de Focus disponible.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateInfo {
+    pub version: String,
+    #[serde(default)]
+    pub notes: String,
+}
+
 /// Bilan du mode console, miroir de `focus-app` : ce qui a changé sur le PC.
 #[derive(Debug, Clone, Default, PartialEq, Deserialize)]
 #[serde(rename_all = "camelCase", default)]
@@ -359,6 +395,15 @@ fn demo(command: &str) -> Value {
             "hardware": { "cpu": "Demo CPU", "memory": 34359738368_u64 },
             "processes": 214, "services": 287, "top": [["demo", 1073741824_u64]]
         }),
+        "downloads" => json!({
+            "steam": [
+                { "appid": "20", "name": "Northern Lights", "done": 6_442_450_944_u64, "total": 16_106_127_360_u64 },
+                { "appid": "30", "name": "Paper Foxes", "done": 0, "total": 0 }
+            ],
+            "installs": [{ "id": "discord", "name": "Discord", "state": "running" }]
+        }),
+        "app_version" => json!("0.1.0"),
+        "update_check" => json!({ "version": "0.2.0", "notes": "" }),
         "console_report" | "close_open_apps" => json!({
             "level": "max", "shellStopped": true,
             "powerBefore": "381b4222f69441f09685ff5bb260df2e", "powerAfter": POWER_HIGH,

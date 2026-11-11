@@ -9,6 +9,7 @@ pub mod engine;
 pub mod journal;
 pub mod model;
 pub mod plan;
+pub mod report;
 pub mod rules;
 pub mod session;
 pub mod spatial;

@@ -141,6 +141,8 @@ pub fn CurrentScreen() -> impl IntoView {
         Some(Screen::Connections) => view! { <ConnectionsScreen/> }.into_any(),
         Some(Screen::Analysis) => view! { <AnalysisScreen/> }.into_any(),
         Some(Screen::Profile) => view! { <ProfileScreen/> }.into_any(),
+        Some(Screen::Downloads) => view! { <DownloadsScreen/> }.into_any(),
+        Some(Screen::Help) => view! { <HelpScreen/> }.into_any(),
         Some(Screen::AddFile) => view! { <AddFileScreen/> }.into_any(),
         Some(Screen::Stores) => view! { <StoresScreen/> }.into_any(),
         Some(Screen::Power) => view! { <PowerScreen/> }.into_any(),
@@ -314,6 +316,184 @@ pub fn AppsDialog() -> impl IntoView {
     }
 }
 
+/// Mise à jour de Focus : ce qui est disponible, le bouton pour l'installer, puis la
+/// progression. Partagé par les écrans Téléchargements et Aide.
+#[component]
+fn UpdateCard() -> impl IntoView {
+    let (ctx, i18n) = (ctx(), use_i18n());
+    let install = move |_| {
+        ctx.update_progress.set(Some(0));
+        spawn_local(async move {
+            if invoke::<Value>("update_install", json!({})).await.is_err() {
+                ctx.update_progress.set(None);
+                ctx.toast.set(Some("upd-failed".to_owned()));
+            }
+        });
+    };
+    move || {
+        let update = ctx.update.get()?;
+        let progress = ctx.update_progress.get();
+        Some(view! {
+            <div class="card download">
+                <strong>{i18n.ts("upd-available", "version", &update.version)}</strong>
+                {match progress {
+                    Some(percent) => view! {
+                        <span class="muted">{i18n.ts("upd-downloading", "percent", &percent.to_string())}</span>
+                        <div class="meter"><span style:width=format!("{percent}%")></span></div>
+                        <span class="muted">{i18n.t("upd-restart")}</span>
+                    }.into_any(),
+                    None => view! {
+                        <div class="row">
+                            <button class="f primary" on:click=install>
+                                <Icon name="download"/><span>{i18n.t("upd-install")}</span></button>
+                        </div>
+                    }.into_any(),
+                }}
+            </div>
+        })
+    }
+}
+
+/// Téléchargements : la mise à jour de Focus, les jeux que Steam reçoit, et ce que
+/// Focus installe. Relu toutes les trois secondes tant que l'écran est ouvert.
+#[component]
+fn DownloadsScreen() -> impl IntoView {
+    let (ctx, i18n) = (ctx(), use_i18n());
+    let data = RwSignal::new(None::<crate::api::Downloads>);
+    let load = move || {
+        spawn_local(async move {
+            let fresh: Option<crate::api::Downloads> = invoke("downloads", json!({})).await.ok();
+            if data.get_untracked() != fresh {
+                data.set(fresh);
+            }
+        });
+    };
+    load();
+    if let Ok(timer) = set_interval_with_handle(load, std::time::Duration::from_secs(3)) {
+        on_cleanup(move || timer.clear());
+    }
+    let open = move |id: &'static str| {
+        spawn_local(async move {
+            let _ = invoke::<Value>("open_updates", json!({ "id": id })).await;
+        });
+    };
+    view! {
+        <main class="screen sheet-screen">
+            <h1>{move || i18n.t("dl-title")}</h1>
+            <UpdateCard/>
+            {move || data.get().map(|data| {
+                let unit = i18n.t("unit-gb");
+                let empty = data.steam.is_empty() && data.installs.is_empty() && ctx.update.with(Option::is_none);
+                let steam = data.steam.iter().map(|game| {
+                    let percent = (game.done * 100).checked_div(game.total).unwrap_or(0).min(100);
+                    let detail = if game.total == 0 {
+                        i18n.t("dl-waiting")
+                    } else {
+                        format!("{percent} % · {} / {} {unit}", gb(game.done), gb(game.total))
+                    };
+                    view! {
+                        <div class="card download">
+                            <strong>{game.name.clone()}</strong>
+                            <span class="muted">{detail}</span>
+                            <div class="meter"><span style:width=format!("{percent}%")></span></div>
+                        </div>
+                    }
+                }).collect_view();
+                let installs = data.installs.iter().map(|job| {
+                    let state = job.state.clone();
+                    let (failed, running) = (state == "failed", state == "running");
+                    view! {
+                        <div class="card download">
+                            <strong>{job.name.clone()}</strong>
+                            <span class:warn=failed class:ok=state == "done" class:pulse=running>
+                                {i18n.t(&format!("dl-state-{state}"))}</span>
+                        </div>
+                    }
+                }).collect_view();
+                view! {
+                    <Show when=move || empty><p class="lead">{move || i18n.t("dl-empty")}</p></Show>
+                    {(!data.steam.is_empty()).then(|| view! { <h2>{i18n.t("dl-steam")}</h2><div class="stack">{steam}</div> })}
+                    {(!data.installs.is_empty()).then(|| view! { <h2>{i18n.t("dl-focus")}</h2><div class="stack">{installs}</div> })}
+                }
+            })}
+            <p class="muted">{move || i18n.t("dl-other")}</p>
+            <div class="row">
+                <button class="f primary" data-auto="" on:click=move |_| ctx.back()>{move || i18n.t("hint-back")}</button>
+                <button class="f pill" on:click=move |_| open("steam:downloads")>{move || i18n.t("dl-open-steam")}</button>
+                <button class="f pill" on:click=move |_| open("epic:downloads")>{move || i18n.t("dl-open-epic")}</button>
+            </div>
+        </main>
+    }
+}
+
+/// Aide : la version de Focus, la mise à jour, et le signalement d'un problème.
+#[component]
+fn HelpScreen() -> impl IntoView {
+    let (ctx, i18n) = (ctx(), use_i18n());
+    let version = RwSignal::new(String::new());
+    // « idle », « checking » ou « none » ; une mise à jour trouvée passe par `ctx.update`.
+    let status = RwSignal::new("idle");
+    let problem = RwSignal::new(String::new());
+    spawn_local(async move {
+        version.set(invoke("app_version", json!({})).await.unwrap_or_default());
+    });
+    let check = move |_| {
+        status.set("checking");
+        spawn_local(async move {
+            match invoke::<Option<crate::api::UpdateInfo>>("update_check", json!({})).await {
+                Ok(Some(update)) => {
+                    ctx.update.set(Some(update));
+                    status.set("idle");
+                }
+                Ok(None) => status.set("none"),
+                Err(_) => {
+                    status.set("idle");
+                    ctx.toast.set(Some("upd-failed".to_owned()));
+                }
+            }
+            after_render(nav::focus_first);
+        });
+    };
+    let send = move |_| {
+        let text = problem.get_untracked();
+        spawn_local(async move {
+            let sent = invoke::<Value>("report_problem", json!({ "text": text })).await.is_ok();
+            ctx.toast.set(Some(if sent { "rep-opened" } else { "err-generic" }.to_owned()));
+        });
+    };
+    view! {
+        <main class="screen sheet-screen">
+            <h1>{move || i18n.t("help-title")}</h1>
+            <p class="lead">{move || i18n.ts("help-version", "version", &version.get())}</p>
+            <UpdateCard/>
+            <div class="row">
+                <button class="f pill" data-auto="" on:click=check>
+                    <Icon name="refresh"/><span>{move || i18n.t(if status.get() == "checking" { "upd-checking" } else { "upd-check" })}</span>
+                </button>
+                <Show when=move || status.get() == "none" && ctx.update.with(Option::is_none)>
+                    <span class="ok">{move || i18n.t("upd-none")}</span>
+                </Show>
+            </div>
+            <h2>{move || i18n.t("rep-title")}</h2>
+            <p>{move || i18n.t("rep-body")}</p>
+            <div class="stack">
+                <button class="f pill" on:click=move |_| ctx.editing.set(Some(TextEdit { value: problem, secret: false }))>
+                    {move || {
+                        let text = problem.get();
+                        if text.is_empty() { i18n.t("rep-describe") } else { text }
+                    }}
+                </button>
+                <button class="f primary" disabled=move || problem.with(|text| text.trim().is_empty()) on:click=send>
+                    <Icon name="next"/><span>{move || i18n.t("rep-send")}</span>
+                </button>
+            </div>
+            <div class="row">
+                <button class="f pill" on:click=move |_| ctx.back()>{move || i18n.t("hint-back")}</button>
+            </div>
+        </main>
+    }
+}
+
 /// Écran du profil : ce que Focus fait pour le joueur, avant et maintenant.
 #[component]
 fn ProfileScreen() -> impl IntoView {
@@ -426,6 +606,9 @@ fn TopBar() -> impl IntoView {
             <div class="tabs">{tabs}</div>
             <div class="actions">
                 <ProfileChip/>
+                <button class="f round" class:alert=move || ctx.update.with(Option::is_some)
+                    title=move || i18n.t("dl-title") aria-label=move || i18n.t("dl-title")
+                    on:click=move |_| ctx.push(Screen::Downloads)><Icon name="download"/></button>
                 <button class="f round" title=move || i18n.t("top-search") aria-label=move || i18n.t("top-search")
                     on:click=move |_| ctx.open_search()><Icon name="search"/></button>
                 {icon_button("add", "top-add", Screen::AddFile)}
@@ -1042,7 +1225,13 @@ fn SettingsScreen() -> impl IntoView {
             <Show when=move || section.get() == "system">
             <section class="group">
                 <h2><Icon name="info"/>{move || i18n.t("set-analysis")}</h2>
-                <button class="f pill" on:click=move |_| ctx.push(Screen::Analysis)>{move || i18n.t("set-analysis")}</button>
+                <div class="row">
+                    <button class="f pill" on:click=move |_| ctx.push(Screen::Help)>
+                        <Icon name="info"/><span>{move || i18n.t("help-title")}</span></button>
+                    <button class="f pill" on:click=move |_| ctx.push(Screen::Downloads)>
+                        <Icon name="download"/><span>{move || i18n.t("dl-title")}</span></button>
+                    <button class="f pill" on:click=move |_| ctx.push(Screen::Analysis)>{move || i18n.t("set-analysis")}</button>
+                </div>
             </section>
             </Show>
             </div>
@@ -1450,6 +1639,7 @@ pub fn QuickPanel() -> impl IntoView {
                 {tile("wifi", "con-wifi", Callback::new(move |_| { ctx.con_tab.set("wifi"); go(Screen::Connections); }))}
                 {tile("bluetooth", "con-bt", Callback::new(move |_| { ctx.con_tab.set("bluetooth"); go(Screen::Connections); }))}
                 {tile("settings", "set-title", Callback::new(move |_| go(Screen::Settings)))}
+                {tile("download", "dl-title", Callback::new(move |_| go(Screen::Downloads)))}
                 {tile("power", "power-title", Callback::new(move |_| go(Screen::Power)))}
             </div>
         </aside>

@@ -28,6 +28,7 @@ tracing-subscriber = "0.3"
 tracing-appender = "0.2"
 tauri = { version = "2", features = [] }
 tauri-plugin-single-instance = "2"
+tauri-plugin-updater = "2"
 
 [target.'cfg(windows)'.dependencies]
 focus-sys.workspace = true

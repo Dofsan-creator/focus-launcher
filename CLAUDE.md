@@ -18,7 +18,8 @@
 - Lint : `cargo clippy --workspace --exclude focus-ui --all-targets -- -D warnings` et `cargo clippy -p focus-ui --target wasm32-unknown-unknown -- -D warnings`
 - Interface seule (navigateur, données de démonstration) : `cd crates/focus-ui && trunk serve`
 - Application : `cd crates/focus-app && cargo tauri dev`
-- Installeur : `cd crates/focus-app && cargo tauri build`
+- Installeur : `cd crates/focus-app && cargo tauri build`, avec `TAURI_SIGNING_PRIVATE_KEY` (chemin de `~/.tauri/focus-launcher.key`, jamais dans le dépôt) et `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` vide : la mise à jour depuis Focus refuse un installeur non signé (décision 24)
+- Dépôt : https://github.com/Dofsan-creator/focus-launcher (public). Une version publiée doit contenir l'installeur, sa signature `.sig` et `latest.json`
 
 ## Skills du projet (`.claude/skills/`)
 

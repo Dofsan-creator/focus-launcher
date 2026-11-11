@@ -135,6 +135,18 @@ pub struct ConsoleReport {
     pub millis: u64,
 }
 
+/// Installation lancée depuis Focus, montrée sur l'écran Téléchargements.
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct InstallJob {
+    /// Identifiant du catalogue.
+    pub id: String,
+    /// Nom affiché.
+    pub name: String,
+    /// `running`, `done` ou `failed`.
+    pub state: &'static str,
+}
+
 /// Entrée fictive qui représente Focus lui-même pour le plan du mode console.
 const CONSOLE_ENTRY: &str = "focus:console";
 
@@ -174,6 +186,8 @@ pub struct App {
     console_plan: Mutex<Option<focus_sys::ops::WinOps>>,
     /// Dernier bilan du mode console, pour l'interface.
     report: Mutex<Option<ConsoleReport>>,
+    /// Installations lancées depuis Focus depuis son ouverture.
+    installs: Mutex<Vec<InstallJob>>,
 }
 
 fn lock<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
@@ -205,6 +219,7 @@ impl App {
             #[cfg(windows)]
             console_plan: Mutex::new(None),
             report: Mutex::new(None),
+            installs: Mutex::new(Vec::new()),
         })
     }
 
@@ -408,6 +423,22 @@ impl App {
         // La mémoire rendue met un instant à apparaître comme disponible.
         std::thread::sleep(Duration::from_millis(400));
         summary.memory_after = focus_sys::console::memory().1;
+    }
+
+    /// Note le début ou la fin d'une installation lancée depuis Focus.
+    pub fn track_install(&self, id: &str, name: &str, state: &'static str) {
+        let mut installs = lock(&self.installs);
+        installs.retain(|job| job.id != id);
+        installs.push(InstallJob {
+            id: id.to_owned(),
+            name: name.to_owned(),
+            state,
+        });
+    }
+
+    /// Installations lancées depuis Focus depuis son ouverture.
+    pub fn installs(&self) -> Vec<InstallJob> {
+        lock(&self.installs).clone()
     }
 
     /// Dernier bilan du mode console.

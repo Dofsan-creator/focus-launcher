@@ -56,6 +56,8 @@ Une ligne par constat (v4, section 5). Gravité : critique, haute, moyenne, bass
 | 46 | 2026-11-11 | moyenne, ouvert | Focus s'est arrêté deux fois sans sortie normale le 2026-11-10 (07:46 et 08:36, dont une pendant Fortnite) : « console mode undone after an unexpected exit » | Cause non trouvée. La sentinelle relance maintenant toujours le bureau |
 | 47 | 2026-11-11 | moyenne, ouvert | Sans bureau, les jeux du Microsoft Store et de l'application Xbox peuvent mal se lancer | 🧑 À essayer ; sinon désactiver « Masquer complètement le bureau Windows » dans les paramètres |
 
+| 48 | 2026-11-12 | haute, à essayer | Mise à jour, signalement et écran Téléchargements (décision 24) écrits et testés hors machine réelle | 🧑 Publier une première version signée, puis une seconde, et vérifier que Focus la propose et l'installe ; vérifier que la fiche GitHub s'ouvre, bureau arrêté |
+
 ## Contradictions des specs, réglées par la règle la plus prudente
 
 Priorité haute (v1) contre au-dessus de la normale (v4.1) ; installation des jeux (v4) contre hors périmètre (v4.4) ; suspension en v1 (v2) contre reportée (v4.3) ; interface toujours native (v2) contre lancement via Steam (v1). Le détail est dans `SPEC.md`, section 2.

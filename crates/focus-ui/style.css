@@ -424,4 +424,9 @@ img { user-select: none; }
 [dir="rtl"] .meter span { transform-origin: right; }
 @keyframes meter-in { from { transform: scaleX(0.2); } }
 .summary li .icon { color: var(--ok); }
+
+/* Téléchargements : une carte par élément, avec sa barre. */
+.card.download { max-width: 980px; gap: 8px; margin-bottom: 4px; }
+.f.round.alert { box-shadow: inset 0 0 0 2px var(--accent); color: var(--accent); }
+.f:disabled { opacity: 0.45; cursor: default; }
 .apps-names { color: var(--text); font-weight: 650; }

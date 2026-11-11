@@ -35,8 +35,20 @@
       ]
     }
   },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDI1OEI3MjZFNTYyOUJENEIKUldSTHZTbFdibktMSlNBbk9YZVhWRFkwb3FhNEl5TzYra3F3d1c1UkdaaGQ0REttc3Y4Um96eTkK",
+      "endpoints": [
+        "https://github.com/Dofsan-creator/focus-launcher/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  },
   "bundle": {
     "active": true,
+    "createUpdaterArtifacts": true,
     "targets": [
       "nsis"
     ],

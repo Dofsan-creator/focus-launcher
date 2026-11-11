@@ -201,6 +201,17 @@ Défauts corrigés au passage, lus dans le journal du 2026-11-10 : 20 s perdues 
 
 Preuve : 179 tests verts, lint sans avertissement (cœur, Windows, application, interface WebAssembly). **Non prouvé sur une vraie machine** : l'arrêt et la relance de l'Explorateur, le lancement par jeton, l'annonce à l'écran et la musique n'ont pas encore été vus ni entendus dans l'exécutable publié.
 
+## 24. Dépôt public, mise à jour, signalement, téléchargements (2026-11-12)
+
+| Point | Options | Choix |
+| --- | --- | --- |
+| Dépôt | Privé ; public | **Public** (`Dofsan-creator/focus-launcher`), choisi par l'utilisateur : un dépôt privé exigerait une clé d'accès dans le logiciel (règle 7). Les adresses personnelles des commits ont été remplacées par l'adresse anonyme de GitHub avant le premier envoi |
+| Mise à jour | Ouvrir la page des versions ; téléchargement maison vérifié par empreinte ; module de mise à jour de Tauri, signé | **Module Tauri signé** : l'installeur doit porter la signature de la clé de Focus, sinon il est refusé, même si le compte GitHub était compromis. Clé privée hors dépôt (`~/.tauri/focus-launcher.key`). Avant d'installer, Focus rend à Windows son état normal |
+| Signalement | Envoi direct par l'API (clé interdite) ; service relais ; fiche GitHub préremplie | **Fiche préremplie** ouverte dans le navigateur : aucune clé, rien n'est envoyé sans que l'utilisateur relise. Le rapport (version, Windows, 12 derniers avertissements) est nettoyé du nom et du dossier de l'utilisateur et gardé dans `reports/`. Limite : il faut un compte GitHub |
+| Téléchargements | Fenêtre de chaque boutique ; lecture sur le disque | **Steam lu sur le disque** (`appmanifest_*.acf`, sans clé ni réseau), installations lancées depuis Focus, mise à jour de Focus. Epic et les autres n'écrivent pas leur progression de façon lisible : un bouton ouvre leur page |
+
+Non prouvé : aucune version n'est encore publiée, donc la mise à jour n'a jamais été reçue ni installée ; l'ouverture de la fiche dans le navigateur n'a pas été vue, bureau arrêté.
+
 ## Propositions de changement (à trancher par l'utilisateur)
 
 1. Livrer d'abord les 11 langues actuelles, puis les autres par la communauté (v4.4 demande toutes les langues de Windows avant la sortie).

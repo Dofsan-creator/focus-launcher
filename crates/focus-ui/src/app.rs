@@ -30,6 +30,8 @@ pub enum Screen {
     Connections,
     Analysis,
     Profile,
+    Downloads,
+    Help,
     AddFile,
     Stores,
     Power,
@@ -89,6 +91,10 @@ pub struct Ctx {
     pub flash: RwSignal<bool>,
     /// Question « fermer les applications ouvertes ? » en cours.
     pub apps_ask: RwSignal<bool>,
+    /// Mise à jour de Focus disponible.
+    pub update: RwSignal<Option<api::UpdateInfo>>,
+    /// Téléchargement de la mise à jour, en pourcentage.
+    pub update_progress: RwSignal<Option<u8>>,
 }
 
 thread_local! {
@@ -634,6 +640,8 @@ pub fn App() -> impl IntoView {
         profile_busy: RwSignal::new(false),
         flash: RwSignal::new(false),
         apps_ask: RwSignal::new(false),
+        update: RwSignal::new(None),
+        update_progress: RwSignal::new(None),
     };
     provide_context(ctx);
     STARTED.set(js_sys::Date::now());
@@ -715,6 +723,20 @@ pub fn App() -> impl IntoView {
         }
     });
 
+    // Une mise à jour de Focus ? Cherchée une fois, sans rien installer : la pastille
+    // des téléchargements le signale.
+    spawn_local(async move {
+        wait_ms(BOOT_MS as i32 + 4000).await;
+        if let Ok(Some(update)) = invoke::<Option<api::UpdateInfo>>("update_check", json!({})).await {
+            ctx.toast.set(Some(i18n.ts("upd-available", "version", &update.version)));
+            ctx.update.set(Some(update));
+        }
+    });
+    api::listen("update-progress", move |value| {
+        let read = |key: &str| js_sys::Reflect::get(&value, &key.into()).ok().and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let (done, total) = (read("done"), read("total"));
+        ctx.update_progress.set(Some(if total > 0.0 { (done * 100.0 / total).min(100.0) as u8 } else { 0 }));
+    });
     api::listen("console-progress", move |_| ctx.profile_busy.set(true));
     api::listen("console-report", move |value| {
         show_profile(ctx, serde_wasm_bindgen::from_value::<Option<ConsoleReport>>(value).ok().flatten());

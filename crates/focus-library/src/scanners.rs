@@ -81,6 +81,58 @@ pub fn steam_update_needed(steam_root: &Path, appid: &str) -> Option<bool> {
     Some(value.parse::<u32>().ok()? != 4)
 }
 
+/// Téléchargement ou mise à jour en cours dans Steam, lu sur le disque.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SteamDownload {
+    /// Identifiant Steam du jeu.
+    pub appid: String,
+    /// Nom du jeu.
+    pub name: String,
+    /// Octets déjà reçus.
+    pub done: u64,
+    /// Octets à recevoir ; 0 tant que Steam n'a pas commencé.
+    pub total: u64,
+}
+
+/// Jeux que Steam télécharge ou met à jour : tout manifeste dont `StateFlags` ne
+/// vaut pas 4 (« à jour »). Lecture seule ; les outils de Steam sont ignorés.
+pub fn steam_downloads(steam_root: &Path) -> Vec<SteamDownload> {
+    let mut downloads = Vec::new();
+    for library in steam_libraries(steam_root).unwrap_or_default() {
+        let Ok(dir) = fs::read_dir(library.join("steamapps")) else {
+            continue;
+        };
+        for file in dir.flatten() {
+            let name = file.file_name().to_string_lossy().to_lowercase();
+            if !(name.starts_with("appmanifest_") && name.ends_with(".acf")) {
+                continue;
+            }
+            let Some(doc) = fs::read_to_string(file.path()).ok().and_then(|text| vdf::parse(&text)) else {
+                continue;
+            };
+            let Some(state) = doc.get("AppState") else { continue };
+            let field = |key: &str| state.get(key).and_then(Value::text);
+            let number = |key: &str| field(key).and_then(|value| value.trim().parse::<u64>().ok());
+            let (Some(appid), Some(title)) = (field("appid"), field("name")) else {
+                continue;
+            };
+            let tool = STEAM_TOOLS.iter().any(|tool| title.to_lowercase().starts_with(tool));
+            if tool || number("StateFlags").is_none_or(|flags| flags == 4) {
+                continue;
+            }
+            downloads.push(SteamDownload {
+                appid: appid.to_owned(),
+                name: title.to_owned(),
+                done: number("BytesDownloaded").unwrap_or(0),
+                total: number("BytesToDownload").unwrap_or(0),
+            });
+        }
+    }
+    downloads.sort_by(|a, b| a.name.cmp(&b.name));
+    downloads
+}
+
 /// Réglages Steam du bouton central dans `localconfig.vdf`. Vrai : le bouton
 /// central ouvre encore Steam par-dessus Focus et les jeux.
 pub fn guide_focuses_steam(localconfig: &str) -> bool {
@@ -450,6 +502,27 @@ mod tests {
             &library.join("steamapps/appmanifest_228980.acf"),
             "\"AppState\" { \"appid\" \"228980\" \"name\" \"Steamworks Common Redistributables\" }",
         )
+    }
+
+    #[test]
+    fn steam_downloads_should_list_only_what_is_not_up_to_date() -> TestResult {
+        let dir = tempfile::tempdir()?;
+        let (root, library) = (dir.path().join("Steam"), dir.path().join("D"));
+        steam_fixture(&root, &library)?;
+        write(
+            &library.join("steamapps/appmanifest_10.acf"),
+            "\"AppState\" { \"appid\" \"10\" \"name\" \"Ready Game\" \"StateFlags\" \"4\" }",
+        )?;
+        write(
+            &library.join("steamapps/appmanifest_20.acf"),
+            "\"AppState\" { \"appid\" \"20\" \"name\" \"Coming Game\" \"StateFlags\" \"1026\" \"BytesToDownload\" \"2000\" \"BytesDownloaded\" \"500\" }",
+        )?;
+        let found = steam_downloads(&root);
+        assert_eq!(
+            found,
+            [SteamDownload { appid: "20".into(), name: "Coming Game".into(), done: 500, total: 2000 }]
+        );
+        Ok(())
     }
 
     #[test]

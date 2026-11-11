@@ -534,17 +534,20 @@ fn catalog_items(data: &Path) -> CmdResult<Vec<CatalogItem>> {
 
 /// Installe par winget. L'identifiant vient du catalogue, jamais de l'interface.
 #[tauri::command(async)]
-pub fn install_app(app: AppHandle, id: String) -> CmdResult<()> {
+pub fn install_app(app: AppHandle, state: Shared<'_>, id: String) -> CmdResult<()> {
     let apps = catalog::load().map_err(|e| AppError::Other(e.to_string()))?;
     let item = apps
         .into_iter()
         .find(|a| a.id == id)
         .ok_or(AppError::UnknownEntry(id))?;
+    let shared = state.inner().clone();
+    shared.track_install(&item.id, &item.name, "running");
     std::thread::spawn(move || {
         #[cfg(windows)]
         let result = focus_sys::winget::install(&item.winget_id);
         #[cfg(not(windows))]
         let result: Result<(), String> = Err("Windows only".to_owned());
+        shared.track_install(&item.id, &item.name, if result.is_ok() { "done" } else { "failed" });
         let payload =
             serde_json::json!({ "id": item.id, "ok": result.is_ok(), "error": result.err() });
         tracing::info!("install finished: {payload}");
@@ -569,6 +572,145 @@ pub fn open_official_page(id: String) -> CmdResult<()> {
     #[cfg(not(windows))]
     drop(item);
     Ok(())
+}
+
+/// Dépôt public de Focus : mises à jour et signalements.
+const REPO: &str = "Dofsan-creator/focus-launcher";
+
+/// Tout ce qui se télécharge ou s'installe : Steam (lu sur le disque) et Focus.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Downloads {
+    steam: Vec<focus_library::scanners::SteamDownload>,
+    installs: Vec<crate::runtime::InstallJob>,
+}
+
+#[tauri::command(async)]
+pub fn downloads(state: Shared<'_>) -> Downloads {
+    Downloads {
+        steam: discover::steam_root()
+            .map(|root| focus_library::scanners::steam_downloads(&root))
+            .unwrap_or_default(),
+        installs: state.installs(),
+    }
+}
+
+/// Version de Focus, pour l'écran d'aide.
+#[tauri::command]
+pub fn app_version(app: AppHandle) -> String {
+    app.package_info().version.to_string()
+}
+
+/// Dernier journal de Focus, s'il existe.
+fn latest_log(data: &Path) -> Option<String> {
+    let newest = std::fs::read_dir(data.join("logs"))
+        .ok()?
+        .flatten()
+        .map(|file| file.path())
+        .filter(|path| path.file_name().is_some_and(|name| name.to_string_lossy().starts_with("launcher.log")))
+        .max()?;
+    std::fs::read_to_string(newest).ok()
+}
+
+/// Signale un problème : le rapport est nettoyé du nom et du dossier de
+/// l'utilisateur, gardé sur le disque, puis la fiche préremplie s'ouvre dans le
+/// navigateur. Focus n'envoie rien lui-même : l'utilisateur relit et valide.
+#[tauri::command(async)]
+pub fn report_problem(app: AppHandle, state: Shared<'_>, text: String) -> CmdResult<()> {
+    use focus_core::report::{issue_url, problem_lines, scrub};
+    let data = state.data_dir().to_path_buf();
+    let settings = state.settings();
+    let log = latest_log(&data).unwrap_or_default();
+    #[cfg(windows)]
+    let system = focus_sys::report::hardware().os;
+    #[cfg(not(windows))]
+    let system = String::new();
+    let body = format!(
+        "### Ce qui s'est passé\n{}\n\n### Informations\n- Focus {}\n- {}\n- Optimisation : {:?}, mode console : {}, bureau masqué : {}\n\n### Derniers avertissements du journal\n```\n{}\n```\n",
+        text.trim(),
+        app.package_info().version,
+        system,
+        settings.level(),
+        settings.console_mode,
+        settings.stop_shell,
+        problem_lines(&log, 12).join("\n"),
+    );
+    let profile = std::env::var("USERPROFILE").unwrap_or_default();
+    let user = std::env::var("USERNAME").unwrap_or_default();
+    let body = scrub(&body, &profile, &user);
+    let stamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |elapsed| elapsed.as_secs());
+    std::fs::create_dir_all(data.join("reports"))?;
+    std::fs::write(data.join("reports").join(format!("report-{stamp}.txt")), &body)?;
+    let first_line = scrub(text.trim().lines().next().unwrap_or_default(), &profile, &user);
+    let title: String = if first_line.is_empty() {
+        "Problème dans Focus".to_owned()
+    } else {
+        first_line.chars().take(70).collect()
+    };
+    #[cfg(windows)]
+    {
+        // Le navigateur doit pouvoir passer devant Focus.
+        focus_sys::console::allow_any_foreground();
+        focus_sys::launch::start(&LaunchTarget::Website { url: issue_url(REPO, &title, &body) })
+            .map_err(|e| AppError::Other(e.to_string()))?;
+    }
+    #[cfg(not(windows))]
+    let _ = (title, issue_url(REPO, "", ""));
+    Ok(())
+}
+
+/// Mise à jour disponible.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateInfo {
+    version: String,
+    notes: String,
+}
+
+fn update_error(err: impl std::fmt::Display) -> AppError {
+    AppError::Other(format!("update: {err}"))
+}
+
+/// Cherche une version plus récente dans les versions publiées du dépôt. Le fichier
+/// reçu doit être signé par la clé de Focus, sinon il est refusé.
+#[tauri::command]
+pub async fn update_check(app: AppHandle) -> CmdResult<Option<UpdateInfo>> {
+    use tauri_plugin_updater::UpdaterExt;
+    let update = app.updater().map_err(update_error)?.check().await.map_err(update_error)?;
+    Ok(update.map(|update| UpdateInfo {
+        version: update.version,
+        notes: update.body.unwrap_or_default(),
+    }))
+}
+
+/// Télécharge la mise à jour (progression envoyée à l'interface), rend à Windows son
+/// état normal, puis lance l'installation : Focus se ferme et rouvre à jour.
+#[tauri::command]
+pub async fn update_install(app: AppHandle, state: Shared<'_>, console: State<'_, Console>) -> CmdResult<()> {
+    use tauri_plugin_updater::UpdaterExt;
+    let Some(update) = app.updater().map_err(update_error)?.check().await.map_err(update_error)? else {
+        return Ok(());
+    };
+    let progress = app.clone();
+    let mut done = 0_u64;
+    let bytes = update
+        .download(
+            move |chunk, total| {
+                done += chunk as u64;
+                let _ = progress.emit("update-progress", serde_json::json!({ "done": done, "total": total.unwrap_or(0) }));
+            },
+            || {},
+        )
+        .await
+        .map_err(update_error)?;
+    tracing::info!("update {} downloaded, installing", update.version);
+    // L'installeur remplace Focus : rien ne doit rester coupé ni masqué.
+    console.leave();
+    state.restore_console_plan();
+    update.install(bytes).map_err(update_error)?;
+    app.restart();
 }
 
 /// Rapport d'analyse, en lecture seule.

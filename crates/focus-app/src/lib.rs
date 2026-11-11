@@ -44,6 +44,8 @@ pub fn run(launch: Launch) {
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             commands::back_to_launcher(app);
         }))
+        // Mises à jour signées, prises dans les versions publiées du dépôt.
+        .plugin(tauri_plugin_updater::Builder::new().build())
         .register_asynchronous_uri_scheme_protocol("focusart", |ctx, request, responder| {
             let data = ctx.app_handle().path().app_local_data_dir().ok();
             let path = request.uri().path().to_owned();
@@ -169,6 +171,11 @@ pub fn run(launch: Launch) {
             commands::apply_console,
             commands::console_report,
             commands::close_open_apps,
+            commands::downloads,
+            commands::app_version,
+            commands::report_problem,
+            commands::update_check,
+            commands::update_install,
             commands::open_store,
             commands::screenshot,
             commands::update_status,
