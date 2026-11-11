@@ -45,6 +45,162 @@ Une entrée par choix structurant (v4.5). Format : contexte, options, choix, éc
 - **Choix** : Iris. Jeux sur un arc, diaphragme à 8 lames autour de la sélection, lancement par fermeture de l'iris.
 - **Pourquoi** : la plus éloignée des rangées droites des consoles, et sans flou (coût GPU nul en arrière-plan).
 
+## 8. Interface qui ne démarre pas (écran noir)
+
+- **Contexte** : la version publiée restait noire (AUDIT n° 18). Le processus vivait, le journal était vide, et une personne à la manette ne pouvait pas sortir d'une fenêtre plein écran sans bordure. Avec le lancement automatique, ce serait à chaque ouverture de session.
+- **Options** : journaliser seulement ; n'afficher la fenêtre qu'une fois l'interface prête ; journaliser, compter le démarrage comme raté et fermer la version publiée après 60 s (option absente des specs) ; message système natif.
+- **Choix** : la troisième. Le premier appel `boot_info` de l'interface sert de preuve, sans nouvelle commande. Le compteur du garde-fou n'est effacé qu'une fois l'interface démarrée : deux écrans noirs de suite coupent le lancement automatique, comme deux plantages (v4.3).
+- **Écarté** : journaliser seulement laisse la personne bloquée. Cacher la fenêtre transforme l'écran noir en processus invisible. Le message natif serait une chaîne hors Fluent, impossible à traduire depuis le cœur. En développement, la fenêtre reste ouverte pour les outils de débogage.
+- **Preuve** : 5 tests dans `boot_guard`, test `crates/focus-app/tests/csp.rs` rouge sur l'ancienne politique puis vert.
+
+## 9. Design « Lumen » (remplace Iris, à la demande de l’utilisateur)
+
+- **Contexte** : l’utilisateur n’aime pas Iris et demande de s’inspirer fortement de la PS5. La règle v4.2 reste : comportements oui, apparence non.
+- **Options** : garder Iris ; copier la disposition PS5 (écarté : règle v4.2 et droit des marques) ; « Lumen », comportements PS5 avec une mise en scène propre.
+- **Choix** : Lumen. Repris : l’image du jeu remplit l’écran, une seule rangée, la sélection grandit, lancement en un appui, panneau rapide qui monte du bas, fondus. Différent : rangée de jaquettes verticales en bas (et non tuiles carrées en haut), logo du jeu à gauche, couleur d’accent tirée de l’image du jeu, icônes dessinées pour le projet, sons synthétisés.
+- **Fluidité** : seulement `transform` et `opacity` animés, une seule piste promue (la rangée glisse d’un bloc), liste à clés (`For`) pour ne jamais recréer les jaquettes, images réduites une fois côté Rust.
+
+## 10. Images des jeux
+
+- **Options** : SteamGridDB (clé requise) ; protocole `asset:` sur des chemins (expose le disque) ; caches locaux des boutiques + icône de l’exécutable, servis par un protocole à clé.
+- **Choix** : Steam (jaquette, fond, logo locaux), Epic (adresses de `catcache.bin`, téléchargées en HTTPS vers 3 hôtes autorisés), icône haute définition de tout exécutable par le shell de Windows. Protocole `focusart` : clé et sorte seulement, jamais un chemin.
+- **Preuve** : tests `focus-core::art`, `focus-library::art`, `focus-app::art` (clés hostiles refusées).
+
+## 11. Mode console de Windows
+
+- **Options** : remplacer l’Explorateur (interdit v4.3) ; masquage automatique de la barre par l’Explorateur (réglage persistant, perdu si plantage) ; masquer les fenêtres de barre des tâches + session de concentration Windows + PC éveillé, le temps que Focus est ouvert.
+- **Choix** : la troisième. Journal `console-state.json` écrit avant tout changement ; défait à la fermeture, par une sentinelle (second exemplaire qui attend la fin du premier) si Focus plante, ou au démarrage suivant. La session de concentration finit seule après 6 h. Aucune écriture dans le registre.
+
+## 12. Wi-Fi et Bluetooth
+
+- **Options** : API WLAN native (profils XML à fabriquer, risque d’injection avec SSID et mot de passe) ; ouvrir les Paramètres de Windows (sort de l’expérience console) ; WinRT `Windows.Devices.*`.
+- **Choix** : WinRT, vérifié sur ce PC (accès « Allowed » sans paquet). Appels bloquants dans un fil neuf. Mot de passe jamais gardé ni journalisé.
+
+## 13. « Toutes les optimisations »
+
+- **Choix** : trois niveaux choisis au premier démarrage, avec accord explicite pour un niveau réel (règle 8) : Désactivées, Équilibrées (profil Concentration), Maximales (profil Maximal : 15 leviers de plus, dont la pause de Windows Update par le gardien, hautes performances et PC éveillé). Tout reste journalisé et restauré.
+- **Écarté** : purge de la mémoire en attente et réglages du registre (règles 3 et D15).
+
+## 14. Windows devient une console (demande du 2026-11-08)
+
+- **Ajouts** : touche Windows et bouton central (PS, Xbox) = retour au launcher ; fenêtres des autres programmes réduites puis rendues ; applications lancées en plein écran sans bordure (logiciels, applications sociales, jeux lancés directement sans anticheat ; jamais un jeu de boutique) ; blocage de Big Picture vérifié chaque seconde ; boutiques déjà installées signalées.
+- **Plan console** : au lancement, avec l’accord du premier démarrage, le profil choisi s’applique pour toute la durée où Focus est ouvert ; au niveau Maximal, 20 programmes d’arrière-plan sont fermés puis relancés à la sortie, 8 services mis en pause par le gardien. Journal avant chaque coupure, restauration à la sortie, par le gardien, par la sentinelle ou au démarrage suivant.
+- **Écarté (registre, règle D15) mais demandé par la communauté** : désactiver Game DVR et la barre de jeu par le registre, Win32PrioritySeparation, NetworkThrottlingIndex, SystemResponsiveness, réglages `bcdedit` du minuteur, désactivation de VBS. À rouvrir seulement si l’utilisateur change la règle.
+- **Bouton central Xbox** : fonction XInput non documentée (ordinal 100, bit 0x0400), utilisée par SDL et Chromium.
+
+## 15. Expérience de console et fichier « Instructions Optimisation »
+
+- **Chargement** : comme sur une console, l’écran de chargement (jaquette, titre, barre) reste affiché jusqu’à ce que le jeu tourne vraiment (45 s au plus), puis Focus s’efface.
+- **Filtres** : Tout, Jeux, Logiciels, Stores, Social. Les boutiques installées s’ouvrent depuis Focus, les autres s’installent.
+- **Registre** (accord de l’utilisateur, D15) : Game DVR, capture, transparence coupés, mode Jeu activé, le temps du mode console. Animations de Windows coupées sans écriture dans le profil.
+- **Fichier d’instructions** : repris : priorité (au-dessus de la normale dans les menus, en dessous pendant un jeu), mémoire libérée (Focus au lancement d’un jeu, arrière-plan au niveau Maximal), effets visuels coupés, LTO déjà actif. Écarté : priorité « temps réel » (gèle Windows et prend les ressources du jeu), tampon de console `WriteConsoleOutputW` (Focus n’est pas un programme en mode texte), VBS (sécurité, redémarrage).
+
+## 16. Règles d’une console appliquées à Focus
+
+| Règle d’une console | Dans Focus |
+| --- | --- |
+| Le bouton central ramène toujours au système | Bouton PS ou Xbox, touche Windows : menu latéral en jeu, accueil sinon |
+| Le système ne montre jamais le bureau | Mode console : barre des tâches cachée, fenêtres réduites, boutiques réduites, Big Picture fermé |
+| Un écran de chargement, puis le jeu | Jaquette et barre jusqu’à l’apparition du jeu |
+| Fin de partie : retour à l’accueil | Écran de fin sur la jaquette, retour seul après 6 s |
+| Une partie à la fois | Lancement refusé si une session tourne déjà |
+| Menu en jeu : capture, fermer, réglages | Menu latéral : revenir, capture d’écran (Images\Focus), fermer, Wi-Fi, Bluetooth, réglages, alimentation |
+| Mode repos | « Mettre en veille » dans Alimentation |
+| Mises à jour visibles | Jeux Steam : « Mise à jour disponible », bouton qui ouvre la boutique |
+| Prérequis installés par le système | Visual C++, DirectX, .NET dans le catalogue |
+
+Les boutiques ouvertes depuis Focus sont réduites, jamais fermées, quand on revient au launcher : un jeu qui en dépend continue.
+
+## 17. Réactivité : rien de lourd sur le fil principal (2026-11-09)
+
+Constat : 17 à 21 s entre « console mode on » et « interface started » au journal ; Retour sans effet en jeu ; page des paramètres qui se fige.
+
+| Option | Pour | Contre |
+| --- | --- | --- |
+| A. Garder le plan avant l’affichage | Windows déjà prêt quand l’interface paraît | 20 s d’écran vide |
+| B. Fenêtre d’abord, mode console et plan dans un fil à part | Fenêtre immédiate, animation pendant le plan | Les autres fenêtres se réduisent une seconde après |
+| C. Plan allégé au démarrage, complet au premier jeu | Démarrage rapide | Le PC n’est pas en état console tant qu’on n’a pas joué |
+
+Choix : B. Les commandes Tauri lourdes passent en `async` (une commande synchrone tourne sur le fil de la fenêtre et la fige). En jeu, la manette envoie toutes les actions à Focus quand sa fenêtre est affichée, plus seulement le bouton central ; Retour sur le menu latéral rend la main au jeu. La fenêtre reprend le clavier par `AttachThreadInput` + `SetForegroundWindow`, sinon Échap part au jeu.
+
+## 18. Manettes natives et réglage du bouton central de Steam (2026-11-09)
+
+Constat : ViGEmBus installé, HidHide absent. Pendant un jeu hors Steam, Focus Input créait une manette Xbox virtuelle à côté de la manette PlayStation réelle : le jeu voyait deux manettes. Les manettes USB, et la manette Xbox en Bluetooth, sont reconnues nativement.
+
+| Option | Pour | Contre |
+| --- | --- | --- |
+| A. Natif par défaut ; Focus Input automatique seulement avec HidHide | Plus de doublon, rien à installer | Un jeu sans prise en charge PlayStation demande le choix manuel |
+| B. Installer HidHide | Doublon supprimé | Pilote système, installation élevée, hors du cadre accordé |
+| C. Garder Focus Input | Symboles Xbox partout | Commandes en double |
+
+Choix : A. Le choix explicite de l’utilisateur reste respecté (`resolve_mode`).
+
+Steam : la solution trouvée par l’utilisateur (désactiver « Le bouton Guide place Steam au premier plan ») est la clé `Controller_CheckGuideButton` de `localconfig.vdf`. Options : écrire la clé (fichier d’un tiers, réécrit par Steam tant qu’il tourne, risque de corruption) ou la lire et guider. Choix : lecture seule, avertissement dans Paramètres › Manette et bouton qui ouvre `steam://settings/controller`. Le blocage de l’autre mode plein écran de Steam reste en place en secours.
+
+## 19. Écran de lancement jusqu'au jeu, fin de session fiable (2026-11-09)
+
+Constats (essais de l'utilisateur, Fortnite et Wuthering Waves) : bureau visible pendant l'anticheat ou le lanceur ; pas de retour automatique après fermeture. Causes : Focus se cachait dès qu'une fenêtre du jeu apparaissait ; le suivi par noms gardait la session ouverte avec `EpicWebHelper` (lanceur Epic) et `msedgewebview2` (Windows), et ne voyait pas `Client-Win64-Shipping` (profondeur 4).
+
+| Option | Pour | Contre |
+| --- | --- | --- |
+| A. Suivre les processus par chemin (dossier du jeu) | Exact | Ouvre un handle sur chaque processus, jeux compris : contraire à SPEC D7 |
+| B. Noms filtrés : assistants écartés, noms déjà lancés avant le jeu écartés, profondeur 6, et exécutable « principal » retenu quand sa fenêtre couvre l'écran | Sans handle, couvre lanceurs et anticheats | Heuristique (seuil de 60 % de l'écran) |
+| C. Fin de session manuelle seulement | Simple | Contraire à la demande |
+
+Choix : B. Focus reste en fond (écran de lancement) ; les fenêtres de lanceur et d'anticheat sont ramenées devant lui ; les grandes fenêtres de boutique sont réduites ; Focus ne se cache qu'une fois le jeu à au moins 60 % de l'écran. La session finit 3 s après la fin de l'exécutable principal, même si le lanceur reste ouvert. Un seul Focus à la fois (`tauri-plugin-single-instance`) : relancer Focus ramène la fenêtre cachée.
+
+## 20. Manette universelle (HidHide) et jeux en administrateur (2026-11-09)
+
+Manette : Focus Input (manette Xbox virtuelle) marche dans tous les jeux, mais sans HidHide le jeu voit aussi la vraie manette. Options : A. natif seulement (manette morte dans les jeux sans prise en charge PlayStation) ; B. HidHide piloté par `HidHideCLI.exe` (sans élévation, documenté), masquage juste avant le lancement, journal `hidhide.json`, restauration en fin de session, au démarrage et par la sentinelle ; C. pilote maison (hors de portée). Choix : B, installé par l'utilisateur depuis le catalogue ; choix manuel Auto/Natif/Focus Input en plus.
+
+Jeux en administrateur : Windows (UIPI) empêche un programme normal de fermer leur fenêtre ou de leur prendre le premier plan. Options : A. Focus toujours en administrateur (UAC à chaque ouverture, tout ce qu'il lance hérite des droits) ; B. assistant élevé lancé à la demande, une invite UAC par session, limité à fermer le jeu de la session ; C. rien (fermeture par le menu du jeu). Décision laissée à l'utilisateur ; en attendant, Focus rend la main au jeu après la demande de fermeture et écrit le refus au journal.
+
+## 21. Focus en administrateur (2026-11-09)
+
+Décision de l'utilisateur, entre deux options présentées : assistant élevé à la demande, ou Focus toujours en administrateur. Choix de l'utilisateur : toujours en administrateur. SPEC D5 révisée.
+
+Mise en œuvre, pour limiter le risque relevé par la v3 (« un jeu lancé depuis un processus élevé hérite de ces droits ») :
+
+| Point | Choix |
+| --- | --- |
+| Manifeste | `requireAdministrator` ajouté au manifeste par défaut de Tauri (`app.manifest`, en ASCII : un caractère accentué fait refuser l'exécutable, erreur 14001) |
+| Lancements | Un exécutable dont le manifeste exige les droits est lancé directement, sans nouvelle invite. Tout le reste passe par l'Explorateur (`IShellDispatch2::ShellExecute` du bureau) et tourne avec les droits normaux, vérifié : enfant en S-1-16-8192, Focus en S-1-16-12288 |
+| Ouverture à la session | Le dossier Démarrage ne lance pas un programme élevé : tâche planifiée `Focus Launcher`, à l'ouverture de session de l'utilisateur, privilèges les plus élevés, sans invite. L'ancien raccourci est retiré |
+| Invite manuelle | Une invite UAC à l'ouverture manuelle de Focus ; elle ne se valide pas à la manette (v4, 6.15) |
+
+## 22. Installeur complet pour un autre PC (2026-11-09)
+
+| Point | Options | Choix |
+| --- | --- | --- |
+| Visual C++ | Redistributable dans l'installeur ; lien statique (`+crt-static`) | Lien statique (`.cargo/config.toml`) : `focus-guardian` importait `vcruntime140.dll`, absent d'un Windows neuf ; l'UCRT fait partie de Windows 10 et 11 |
+| WebView2 | Amorce téléchargée (Internet requis) ; amorce intégrée ; installeur hors ligne (+130 Mo) | Hors ligne, silencieux : marche sans Internet, ne s'installe que s'il manque |
+| Portée | Utilisateur courant ; tous les utilisateurs | Tous les utilisateurs (`Program Files`), cohérent avec SPEC D5 |
+| Langues | Anglais seul ; les 11 langues de Focus | Les 11, avec choix au démarrage de l'installeur |
+| Désinstallation | Laisser la tâche et le service ; les retirer | Crochets NSIS : arrêt du service pendant une mise à jour, retrait de la tâche `Focus Launcher` et du service à la désinstallation |
+| Guardian | Compilé dans `target/release` (verrouillé par le service de ce PC) ; cible explicite | `--target x86_64-pc-windows-msvc` : dossier à part, plus de conflit avec le service installé |
+
+Non inclus : HidHide et ViGEmBus (pilotes, redémarrage, installés depuis le catalogue par winget) ; signature de l'exécutable (SmartScreen préviendra).
+
+## 23. Mode console v2 : bureau arrêté, balayage, profil visible (2026-11-11)
+
+Demande de l'utilisateur : « transformer le bureau en console, supprimer tout ce qui est inutile en arrière, créer un script d'optimisation spéciale, supprimer toute interaction avec le bureau », pour quelqu'un qui vient d'une console et ne connaît rien au PC. Les trois choix ci-dessous ont été faits par lui le 2026-11-11.
+
+| Point | Options | Choix |
+| --- | --- | --- |
+| Bureau de Windows | Explorateur masqué (avant) ; Explorateur arrêté tant que Focus est ouvert ; Focus désigné comme bureau au démarrage (registre Winlogon) ; compte Windows dédié | **Arrêté puis relancé.** Aucun registre, rien de permanent : un redémarrage du PC rend le bureau. Noté au journal avant l'arrêt ; relancé à la sortie, par la sentinelle si Focus plante, et au démarrage suivant. Écarté : le registre Winlogon (écran noir si Focus ne démarre pas) |
+| Liste blanche | Retirer `explorer` de la liste compilée ; arrêt hors du moteur de règles | **Hors du moteur** : `explorer` reste protégé contre tout fichier de règles (règle 2). Seul le mode console l'arrête, par un chemin dédié et journalisé |
+| Lancements sans bureau | Tout lancer avec les droits de Focus ; tâche planifiée ; jeton d'un programme ordinaire de la session | **Jeton** de `sihost` ou équivalent (`CreateProcessWithTokenW`), refusé s'il est élevé. L'ancienne voie par l'Explorateur sert encore quand il tourne. Le bureau lui-même est relancé ainsi, donc sans droits administrateur |
+| « Script d'optimisation » | Script PowerShell permanent ; profil intégré en Rust | **Profil intégré** : journalisé, rendu à la sortie, conforme à « Rust partout » |
+| Arrière-plan (niveau Maximal) | Liste connue seulement ; tout fermer ; balayage | **Balayage** : tout programme du compte sans fenêtre, hors dossier de Windows, est ralenti (mode efficacité, priorité basse), jamais fermé. Les applications à fenêtre sont proposées à la fermeture, en une seule question |
+| Fermeture des applications | Forcée ; douce | **Douce, jamais forcée** : une application qui demande d'enregistrer reste ouverte. C'est pourquoi « Les fermer » est le choix par défaut du dialogue. Pas de relance à la sortie : l'utilisateur a choisi de les fermer |
+| Exclusions du balayage | — | Liste blanche, boutiques, applications sociales gardées, logiciels de création, outils de manette et de ventilation (`is_device_process`), et tout programme situé dans le dossier d'un jeu de la bibliothèque (aucun handle sur un jeu ni son anticheat, SPEC D7) |
+| Voir le changement | Message au journal ; pastille et annonce | **Pastille** sur l'accueil, **annonce** qui descend avec ce qui a changé, **écran** avant et maintenant (mémoire libre, puissance). Mots simples, aucun terme technique |
+| Musique | Nappe fixe de quatre sinusoïdes (avant) ; musique générée | Accords tenus qui se fondent, notes de cloche espacées, gamme pentatonique sans dissonance, réverbération. Les sons de navigation sont dans la même gamme |
+
+Défauts corrigés au passage, lus dans le journal du 2026-11-10 : 20 s perdues à chaque ouverture à attendre la fermeture de Game Bar (processus sans fenêtre) ; relance de Game Bar refusée, donc journal jamais effacé et « recovery incomplete » à chaque démarrage ; un jeu lancé pendant le passage en mode console appliquait un second plan par-dessus ; les programmes relancés à la sortie héritaient des droits administrateur de Focus.
+
+Preuve : 179 tests verts, lint sans avertissement (cœur, Windows, application, interface WebAssembly). **Non prouvé sur une vraie machine** : l'arrêt et la relance de l'Explorateur, le lancement par jeton, l'annonce à l'écran et la musique n'ont pas encore été vus ni entendus dans l'exécutable publié.
+
 ## Propositions de changement (à trancher par l'utilisateur)
 
 1. Livrer d'abord les 11 langues actuelles, puis les autres par la communauté (v4.4 demande toutes les langues de Windows avant la sortie).

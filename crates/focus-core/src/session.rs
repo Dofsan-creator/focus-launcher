@@ -96,15 +96,49 @@ pub fn apply_plan(
             .collect(),
     };
     store.write(&journal)?;
+    run_from(&mut journal, 0, ops, store)
+}
 
+/// Ajoute des étapes à une session déjà journalisée (applications que l'utilisateur
+/// accepte de fermer après coup). Elles sont écrites au journal avant d'être faites.
+pub fn extend_plan(
+    steps: &[Step],
+    entry_id: &str,
+    started_at: i64,
+    ops: &mut dyn SystemOps,
+    store: &JournalStore,
+) -> Result<Report, SessionError> {
+    let mut journal = store.read()?.unwrap_or_else(|| Journal {
+        version: 1,
+        entry_id: entry_id.to_owned(),
+        started_at,
+        entries: Vec::new(),
+    });
+    let first = journal.entries.len();
+    journal.entries.extend(steps.iter().map(|step| JournalEntry {
+        step: step.clone(),
+        state: StepState::Planned,
+        original: Original::None,
+    }));
+    store.write(&journal)?;
+    run_from(&mut journal, first, ops, store)
+}
+
+/// Capture puis applique les étapes à partir de `first`, en tenant le journal à jour.
+fn run_from(
+    journal: &mut Journal,
+    first: usize,
+    ops: &mut dyn SystemOps,
+    store: &JournalStore,
+) -> Result<Report, SessionError> {
     let mut report = Report::default();
-    for index in 0..journal.entries.len() {
+    for index in first..journal.entries.len() {
         let step = journal.entries[index].step.clone();
         match capture(&step, ops) {
             Ok(original) => {
                 journal.entries[index].original = original;
                 journal.entries[index].state = StepState::Captured;
-                store.write(&journal)?;
+                store.write(journal)?;
             }
             Err(err) => {
                 report.failures.push(format!("capture failed: {err}"));
@@ -114,7 +148,7 @@ pub fn apply_plan(
         match apply(&step, ops) {
             Ok(()) => {
                 journal.entries[index].state = StepState::Applied;
-                store.write(&journal)?;
+                store.write(journal)?;
                 report.done += 1;
             }
             Err(err) => report.failures.push(format!("apply failed: {err}")),
@@ -325,6 +359,7 @@ mod tests {
             name: "x".into(),
             path: None,
             memory: 0,
+            role: crate::model::ProcessRole::System,
         }
     }
 
@@ -369,6 +404,35 @@ mod tests {
                 "sleep"
             ]
         );
+        Ok(())
+    }
+
+    #[test]
+    fn extended_steps_should_be_journaled_and_restored_with_the_rest() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
+        let store = store(&dir);
+        let mut ops = Fake::default();
+        apply_plan(&full_plan(), "e", 0, &mut ops, &store)?;
+        let extra = [Step::Throttle { process: proc(9) }];
+        let report = extend_plan(&extra, "e", 0, &mut ops, &store)?;
+        assert_eq!(report.done, 1);
+        let journal = store.read()?.ok_or("journal missing")?;
+        assert_eq!(journal.entries.len(), 6);
+        assert_eq!(journal.entries[5].state, StepState::Applied);
+        ops.log.clear();
+        restore(&mut ops, &store)?;
+        assert_eq!(ops.log.first().map(String::as_str), Some("unthrottle:9:32"));
+        assert_eq!(store.read()?, None);
+        Ok(())
+    }
+
+    #[test]
+    fn extending_without_a_journal_should_start_one() -> Result<(), Box<dyn std::error::Error>> {
+        let dir = tempfile::tempdir()?;
+        let store = store(&dir);
+        let mut ops = Fake::default();
+        extend_plan(&[Step::KeepAwake], "e", 0, &mut ops, &store)?;
+        assert_eq!(store.read()?.map(|journal| journal.entries.len()), Some(1));
         Ok(())
     }
 

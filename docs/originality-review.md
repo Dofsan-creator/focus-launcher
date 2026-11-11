@@ -1,13 +1,13 @@
-# Revue d'originalité
+# Revue d’originalité
 
-Comparaison interne, faite d'après des descriptions écrites (support officiel des consoles, documentation de Playnite). **Aucune capture n'a été utilisée, livrée ni placée dans le dépôt.** Une revue sur captures reste à faire par l'utilisateur (condition 20).
+Comparaison faite d’après des descriptions écrites. **Aucune capture n’est livrée, décalquée ni placée dans le dépôt.** Une revue sur captures reste à faire par l’utilisateur (condition 20).
 
 | Écran | Repris (comportement) | Différent (apparence) | Jugement |
 | --- | --- | --- | --- |
-| Accueil | Défilement horizontal, sélection agrandie, fond selon le jeu | Arc et non rangée droite, anneau à lames, pas de tuiles, pas de flou | Assez différent |
-| Panneau rapide | Ouverture par-dessus, retour sans fermer, fermeture avec confirmation | Panneau latéral simple, combo Back + Start maintenu et non bouton central, nom propre | Assez différent |
-| Fermeture | Avertissement de perte de progression | Chaîne douce, attente, forcée avec seconde confirmation | Assez différent |
-| Démarrage | Animation courte | Anneau de diaphragme | Assez différent |
-| Bibliothèque | Filtres par type | Filtres Tout, Jeux, Logiciels, Social, changés avec L1 et R1 | À valider sur captures |
+| Accueil | Image du jeu en plein écran, une seule rangée, sélection agrandie, lancement en un appui | Jaquettes verticales en bas et non tuiles carrées en haut, logo à gauche, accent tiré de l’image, piste fixe à gauche | Assez différent, à confirmer sur captures |
+| Panneau rapide | Feuille qui monte du bas, retour au jeu sans le fermer | Grandes tuiles d’action, combo Back + Start, nom propre | Assez différent |
+| Premier démarrage | Assistant en étapes | Huit étapes propres au projet (mode console, performances) | Assez différent |
+| Connexions | Wi-Fi et Bluetooth dans l’interface | Onglets et listes du projet | Assez différent |
+| Démarrage | Animation courte | Anneau à quart coloré | Assez différent |
 
-Références à comparer par l'utilisateur : Playnite plein écran, Steam Big Picture, interface Xbox, PS5, Nintendo Switch.
+Références à comparer par l’utilisateur : Playnite plein écran, Steam Big Picture, interface Xbox, PS5, Nintendo Switch.

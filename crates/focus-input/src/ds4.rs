@@ -80,6 +80,7 @@ pub fn parse_report(report: &[u8]) -> Option<PadState> {
     set(extra & 0x08 != 0, Button::RightTrigger);
     set(extra & 0x10 != 0, Button::Back); // Share
     set(extra & 0x20 != 0, Button::Start); // Options
+    set(data.get(6).is_some_and(|byte| byte & 0x01 != 0), Button::Guide); // PS
     Some(PadState {
         pressed,
         left_x: axis(data[0]),

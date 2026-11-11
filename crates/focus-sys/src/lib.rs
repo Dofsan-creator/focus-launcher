@@ -6,11 +6,17 @@
 #![cfg(windows)]
 
 pub mod audio;
+pub mod connect;
+pub mod console;
+pub mod hidhide;
+pub mod http;
+pub mod icon;
 pub mod launch;
 pub mod ops;
 pub mod report;
 pub mod scan;
 pub mod shell;
+pub mod unelevated;
 pub mod winget;
 
 mod wide;

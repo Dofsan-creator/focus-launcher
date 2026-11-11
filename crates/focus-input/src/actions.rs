@@ -31,14 +31,16 @@ pub enum Action {
     PageNext,
     /// Panneau rapide (combo court).
     QuickPanel,
+    /// Bouton central : ramène au launcher, comme une console.
+    Home,
     /// Réglages rapides (combo long).
     QuickSettings,
 }
 
 /// Délai avant la première répétition, en millisecondes.
-const REPEAT_DELAY_MS: u64 = 350;
+const REPEAT_DELAY_MS: u64 = 260;
 /// Intervalle de répétition.
-const REPEAT_INTERVAL_MS: u64 = 90;
+const REPEAT_INTERVAL_MS: u64 = 65;
 /// Seuil au-delà duquel le stick compte comme une direction.
 const STICK_THRESHOLD: f32 = 0.6;
 /// Maintien du combo pour le panneau rapide.
@@ -48,8 +50,9 @@ const COMBO_LONG_HOLD_MS: u64 = 2000;
 
 const DIRECTIONS: [Action; 4] = [Action::Up, Action::Down, Action::Left, Action::Right];
 
-const BUTTONS: [(Button, Action); 7] = [
+const BUTTONS: [(Button, Action); 8] = [
     (Button::South, Action::Confirm),
+    (Button::Guide, Action::Home),
     (Button::East, Action::Back),
     (Button::West, Action::Secondary),
     (Button::North, Action::Options),
@@ -172,10 +175,12 @@ mod tests {
         let mut mapper = ActionMapper::default();
         let hold = pad(&[Button::DpadRight]);
         assert_eq!(mapper.update(&hold, 0), [Action::Right]);
-        assert!(mapper.update(&hold, 300).is_empty());
-        assert_eq!(mapper.update(&hold, 350), [Action::Right]);
-        assert!(mapper.update(&hold, 400).is_empty());
-        assert_eq!(mapper.update(&hold, 440), [Action::Right]);
+        let first = REPEAT_DELAY_MS;
+        let second = first + REPEAT_INTERVAL_MS;
+        assert!(mapper.update(&hold, first - 10).is_empty());
+        assert_eq!(mapper.update(&hold, first), [Action::Right]);
+        assert!(mapper.update(&hold, second - 10).is_empty());
+        assert_eq!(mapper.update(&hold, second), [Action::Right]);
     }
 
     #[test]

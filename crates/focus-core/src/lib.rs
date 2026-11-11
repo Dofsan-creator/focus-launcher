@@ -4,6 +4,7 @@
 //! ici pour être testé avec de faux systèmes, avant de toucher une vraie machine.
 #![deny(missing_docs)]
 
+pub mod art;
 pub mod engine;
 pub mod journal;
 pub mod model;

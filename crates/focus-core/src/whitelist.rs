@@ -167,6 +167,44 @@ const SOCIAL_PROCESSES: &[&str] = &[
     "streamlabs desktop",
 ];
 
+/// Outils de manette, de ventilation et de surveillance du matériel : les ralentir
+/// ajouterait du retard aux commandes ou gênerait le refroidissement. Le balayage
+/// du mode console ne les touche pas.
+const DEVICE_PROCESSES: &[&str] = &[
+    "ds4windows",
+    "dsx",
+    "rewasd",
+    "joytokey",
+    "antimicrox",
+    "x360ce",
+    "betterjoy",
+    "inputmapper",
+    "xpadder",
+    "hidhideclient",
+    "hidhidecli",
+    "lghub",
+    "lghub_agent",
+    "lghub_system_tray",
+    "razer synapse 3",
+    "razerappengine",
+    "icue",
+    "steelseriesgg",
+    "steelseriesengine",
+    "msiafterburner",
+    "rtss",
+    "fancontrol",
+    "speedfan",
+    "hwinfo64",
+    "argusmonitor",
+    "armourycrate.service",
+    "armourycrate.usersessionhelper",
+];
+
+/// Est-ce un outil de manette, de ventilation ou de surveillance du matériel ?
+pub fn is_device_process(name: &str) -> bool {
+    DEVICE_PROCESSES.contains(&normalize(name).as_str())
+}
+
 /// Met un nom d'image sous la forme de comparaison : minuscules, sans `.exe`.
 pub fn normalize(name: &str) -> String {
     let lower = name.trim().to_lowercase();

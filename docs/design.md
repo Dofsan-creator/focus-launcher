@@ -1,36 +1,33 @@
-# Charte graphique : direction « Iris »
+# Charte graphique : direction « Lumen »
 
-Le nom « Focus » invite à la photographie. La métaphore retenue est le diaphragme : il s'ouvre sur un jeu et se ferme pour le lancer.
+Inspirée du comportement des consoles (l’image du jeu domine, une seule rangée, un appui pour jouer), exécutée à notre façon. Décision 9 de `docs/decisions.md`.
 
 ## Écrans
 
 | Écran | Signature |
 | --- | --- |
-| Démarrage | Un anneau de 8 lames tourne de 45° puis s'efface (900 ms). |
-| Accueil | Les jeux reposent sur un **arc** dont le centre est sous l'écran. La sélection est au sommet, entourée d'un anneau à 8 lames. Le fond prend la teinte du jeu sélectionné. |
-| Lancement | L'écran se ferme en losange vers le centre (420 ms), comme un iris qui se ferme. |
-| Panneau rapide | Panneau latéral côté fin de ligne (droite en LTR, gauche en RTL). |
+| Démarrage | Un anneau dont un quart prend la couleur d’accent tourne, puis s’efface (1,1 s). |
+| Premier démarrage | Huit étapes : langue, mode console, manette, connexions, bibliothèque, performances, son, prêt. Points de progression en haut. |
+| Accueil | L’image de fond du jeu sélectionné remplit l’écran (fondu entre deux couches). Logo ou titre à gauche, bouton Jouer à la couleur du jeu. Rangée de jaquettes verticales en bas ; la piste glisse, la sélection reste à gauche et grandit de 12 %. |
+| Lancement | La jaquette s’avance sur l’image du jeu assombrie, puis la fenêtre se cache. |
+| Panneau rapide | Feuille qui monte du bas : reprendre ou fermer le jeu, Wi-Fi, Bluetooth, réglages, alimentation. |
+| Connexions | Onglets Wi-Fi et Bluetooth, interrupteur de radio, listes de réseaux et d’appareils. |
 
 ## Jetons (`crates/focus-ui/style.css`)
 
-| Jeton | Sombre | Clair |
-| --- | --- | --- |
-| `--bg` | `#0b0d10` | `#efeae0` |
-| `--accent` | `#e9a23b` (ambre) | `#a2600c` |
-| `--danger` | `#e5604d` | idem |
-| `--fast` / `--slow` | 160 / 280 ms | 1 ms si « réduire les animations » |
-| Courbe | `cubic-bezier(0.3, 1.25, 0.45, 1)`, léger dépassement | |
+| Jeton | Valeur |
+| --- | --- |
+| `--bg` | `#08090c` (clair : `#eef0f4`) |
+| `--accent` | couleur dominante de l’image du jeu, sinon `#e9a23b` |
+| `--fast` / `--mid` / `--slow` | 140 / 260 / 520 ms, 1 ms si « réduire les animations » |
+| Courbes | `--ease` (sortie douce), `--spring` (léger rebond pour le focus) |
 
-Taille de texte : `clamp(16px, 1.25vw, 24px)`, lisible depuis un canapé. Un seul élément focalisé à la fois : bordure ambre et agrandissement de 3 %.
+Focus : anneau clair de 3 px et halo de la couleur d’accent. Seuls `transform` et `opacity` sont animés.
 
-## Icônes de boutons
+## Icônes et sons
 
-Formes ✕ ○ pour le style « Formes », lettres A B pour le style « Lettres ». Ce sont des caractères Unicode, pas des icônes de constructeur.
-
-## Sons
-
-Trois tons synthétisés (déplacement 520 Hz, validation 760 Hz, retour 340 Hz), désactivables.
+Icônes dessinées pour le projet (`crates/focus-ui/src/icons.rs`), traits sur une grille de 24. Sons et musique d’ambiance synthétisés (`sound.rs`), aucun fichier audio.
 
 ## Vocabulaire
 
-« Panneau rapide » (pas « Control Center »), « Reprendre » (pas « Quick Resume »).
+« Panneau rapide », « Mode console », « Connexions ». Aucun terme de constructeur.

@@ -5,10 +5,10 @@ use crate::runtime::App;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 const LIBRARY_POLL: Duration = Duration::from_secs(15);
-const BIG_PICTURE_POLL: Duration = Duration::from_secs(2);
+const BIG_PICTURE_POLL: Duration = Duration::from_secs(1);
 
 fn latest_change(paths: &[PathBuf]) -> Option<SystemTime> {
     paths
@@ -27,6 +27,7 @@ pub fn spawn(app: AppHandle, state: Arc<App>) {
         if let Err(err) = scan_into(&scan_state, &scan_app) {
             tracing::warn!("library scan failed: {err}");
         }
+        crate::art::refresh(&scan_state, &scan_app);
         let paths = focus_library::discover::watch_paths();
         let mut known = latest_change(&paths);
         loop {
@@ -37,6 +38,7 @@ pub fn spawn(app: AppHandle, state: Arc<App>) {
                 if let Err(err) = scan_into(&scan_state, &scan_app) {
                     tracing::warn!("library scan failed: {err}");
                 }
+                crate::art::refresh(&scan_state, &scan_app);
             }
         }
     });
@@ -44,6 +46,17 @@ pub fn spawn(app: AppHandle, state: Arc<App>) {
     #[cfg(windows)]
     std::thread::spawn(move || loop {
         std::thread::sleep(BIG_PICTURE_POLL);
+        // Mode console : Windows remontre parfois la barre des tâches (menu Démarrer).
+        if let Some(console) = app.try_state::<crate::console::Console>() {
+            console.keep_taskbar_hidden();
+            // Hors partie, une boutique qui surgit reste réduite, sauf si on l’a ouverte.
+            if console.is_active()
+                && !state.in_session.load(std::sync::atomic::Ordering::SeqCst)
+                && !crate::commands::STORE_OPEN.load(std::sync::atomic::Ordering::SeqCst)
+            {
+                focus_sys::console::minimize_processes(crate::commands::STORE_PROCESSES);
+            }
+        }
         if state.settings().block_big_picture && focus_sys::shell::big_picture_open() {
             // Lien non documenté par Valve : un échec ne doit jamais gêner le launcher.
             let target = focus_core::model::LaunchTarget::Protocol {

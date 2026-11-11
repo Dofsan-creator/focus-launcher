@@ -18,6 +18,8 @@ pub enum Family {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub enum Button {
+    /// Bouton central (PS, Xbox) : retour au launcher.
+    Guide,
     /// Bas (A, croix).
     South,
     /// Droite (B, rond).

@@ -5,16 +5,340 @@
       "name": "Concentration",
       "simulationOnly": false,
       "rules": [
-        { "type": "process", "name": "OneDrive", "action": "throttle", "restoreAfterGame": true, "risk": "low", "reason": "Cloud sync is not needed while playing" },
-        { "type": "process", "name": "Dropbox", "action": "throttle", "restoreAfterGame": true, "risk": "low", "reason": "Cloud sync is not needed while playing" },
-        { "type": "process", "name": "GoogleDriveFS", "action": "throttle", "restoreAfterGame": true, "risk": "low", "reason": "Cloud sync is not needed while playing" },
-        { "type": "process", "name": "ms-teams", "action": "throttle", "restoreAfterGame": true, "risk": "low", "reason": "Work chat in the background" },
-        { "type": "process", "name": "chrome", "action": "askUser", "restoreAfterGame": false, "risk": "medium", "reason": "Open tabs may hold unsaved work" },
-        { "type": "process", "name": "msedge", "action": "askUser", "restoreAfterGame": false, "risk": "medium", "reason": "Open tabs may hold unsaved work" },
-        { "type": "process", "name": "firefox", "action": "askUser", "restoreAfterGame": false, "risk": "medium", "reason": "Open tabs may hold unsaved work" },
-        { "type": "service", "name": "WSearch", "action": "stop", "restoreAfterGame": true, "risk": "low", "reason": "Search indexing uses the disk" },
-        { "type": "service", "name": "SysMain", "action": "stop", "restoreAfterGame": true, "risk": "low", "reason": "Prefetching uses the disk" },
-        { "type": "service", "name": "Spooler", "action": "stop", "restoreAfterGame": true, "risk": "low", "reason": "Printing is not used while playing" }
+        {
+          "type": "process",
+          "name": "OneDrive",
+          "action": "throttle",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Cloud sync is not needed while playing"
+        },
+        {
+          "type": "process",
+          "name": "Dropbox",
+          "action": "throttle",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Cloud sync is not needed while playing"
+        },
+        {
+          "type": "process",
+          "name": "GoogleDriveFS",
+          "action": "throttle",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Cloud sync is not needed while playing"
+        },
+        {
+          "type": "process",
+          "name": "ms-teams",
+          "action": "throttle",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Work chat in the background"
+        },
+        {
+          "type": "process",
+          "name": "chrome",
+          "action": "askUser",
+          "restoreAfterGame": false,
+          "risk": "medium",
+          "reason": "Open tabs may hold unsaved work"
+        },
+        {
+          "type": "process",
+          "name": "msedge",
+          "action": "askUser",
+          "restoreAfterGame": false,
+          "risk": "medium",
+          "reason": "Open tabs may hold unsaved work"
+        },
+        {
+          "type": "process",
+          "name": "firefox",
+          "action": "askUser",
+          "restoreAfterGame": false,
+          "risk": "medium",
+          "reason": "Open tabs may hold unsaved work"
+        },
+        {
+          "type": "service",
+          "name": "WSearch",
+          "action": "stop",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Search indexing uses the disk"
+        },
+        {
+          "type": "service",
+          "name": "SysMain",
+          "action": "stop",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Prefetching uses the disk"
+        },
+        {
+          "type": "service",
+          "name": "Spooler",
+          "action": "stop",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Printing is not used while playing"
+        }
+      ]
+    },
+    {
+      "name": "Maximal",
+      "simulationOnly": false,
+      "rules": [
+        {
+          "type": "process",
+          "name": "OneDrive",
+          "action": "close",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Cloud sync is not needed while playing"
+        },
+        {
+          "type": "process",
+          "name": "Dropbox",
+          "action": "close",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Cloud sync is not needed while playing"
+        },
+        {
+          "type": "process",
+          "name": "GoogleDriveFS",
+          "action": "close",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Cloud sync is not needed while playing"
+        },
+        {
+          "type": "process",
+          "name": "ms-teams",
+          "action": "close",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Work chat in the background"
+        },
+        {
+          "type": "process",
+          "name": "chrome",
+          "action": "askUser",
+          "restoreAfterGame": false,
+          "risk": "medium",
+          "reason": "Open tabs may hold unsaved work"
+        },
+        {
+          "type": "process",
+          "name": "msedge",
+          "action": "askUser",
+          "restoreAfterGame": false,
+          "risk": "medium",
+          "reason": "Open tabs may hold unsaved work"
+        },
+        {
+          "type": "process",
+          "name": "firefox",
+          "action": "askUser",
+          "restoreAfterGame": false,
+          "risk": "medium",
+          "reason": "Open tabs may hold unsaved work"
+        },
+        {
+          "type": "service",
+          "name": "WSearch",
+          "action": "stop",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Search indexing uses the disk"
+        },
+        {
+          "type": "service",
+          "name": "SysMain",
+          "action": "stop",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Prefetching uses the disk"
+        },
+        {
+          "type": "service",
+          "name": "Spooler",
+          "action": "stop",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Printing is not used while playing"
+        },
+        {
+          "type": "process",
+          "name": "Teams",
+          "action": "close",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Work chat in the background"
+        },
+        {
+          "type": "process",
+          "name": "slack",
+          "action": "close",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Work chat in the background"
+        },
+        {
+          "type": "process",
+          "name": "AdobeCollabSync",
+          "action": "close",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Document sync is not needed while playing"
+        },
+        {
+          "type": "process",
+          "name": "CCXProcess",
+          "action": "close",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Creative app helper in the background"
+        },
+        {
+          "type": "process",
+          "name": "Creative Cloud",
+          "action": "close",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Creative app updater in the background"
+        },
+        {
+          "type": "process",
+          "name": "iCloudServices",
+          "action": "close",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Cloud sync is not needed while playing"
+        },
+        {
+          "type": "process",
+          "name": "iCloudDrive",
+          "action": "close",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Cloud sync is not needed while playing"
+        },
+        {
+          "type": "process",
+          "name": "PhoneExperienceHost",
+          "action": "close",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Phone link in the background"
+        },
+        {
+          "type": "process",
+          "name": "Widgets",
+          "action": "close",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Desktop widgets are hidden while playing"
+        },
+        {
+          "type": "process",
+          "name": "WidgetService",
+          "action": "close",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Desktop widgets are hidden while playing"
+        },
+        {
+          "type": "service",
+          "name": "wuauserv",
+          "action": "stop",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Windows Update waits until the session ends"
+        },
+        {
+          "type": "service",
+          "name": "UsoSvc",
+          "action": "stop",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Update scheduling waits until the session ends"
+        },
+        {
+          "type": "service",
+          "name": "DoSvc",
+          "action": "stop",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Update sharing uses the network"
+        },
+        {
+          "type": "service",
+          "name": "BITS",
+          "action": "stop",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Background transfers use the network"
+        },
+        {
+          "type": "service",
+          "name": "DiagTrack",
+          "action": "stop",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Diagnostic data upload can wait"
+        },
+        {
+          "type": "process",
+          "name": "GameBar",
+          "action": "close",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Game overlay is not needed while Focus is open"
+        },
+        {
+          "type": "process",
+          "name": "GameBarFTServer",
+          "action": "close",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Game overlay is not needed while Focus is open"
+        },
+        {
+          "type": "process",
+          "name": "AdobeARM",
+          "action": "close",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Updater in the background"
+        },
+        {
+          "type": "process",
+          "name": "AdobeIPCBroker",
+          "action": "close",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Creative app helper in the background"
+        },
+        {
+          "type": "process",
+          "name": "GoogleUpdate",
+          "action": "close",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Updater in the background"
+        },
+        {
+          "type": "process",
+          "name": "YourPhone",
+          "action": "close",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "Phone link in the background"
+        }
       ]
     }
   ],

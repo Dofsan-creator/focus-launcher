@@ -68,6 +68,47 @@ pub fn steam_libraries(steam_root: &Path) -> Result<Vec<PathBuf>, ScanError> {
     Ok(paths)
 }
 
+/// Un jeu Steam attend-il une mise à jour ? `StateFlags` vaut 4 quand le jeu est à
+/// jour ; toute autre valeur (mise à jour requise, en cours, en pause) demande Steam.
+/// `None` si le manifeste est introuvable.
+pub fn steam_update_needed(steam_root: &Path, appid: &str) -> Option<bool> {
+    let libraries = steam_libraries(steam_root).ok()?;
+    let text = libraries.iter().find_map(|library| {
+        std::fs::read_to_string(library.join("steamapps").join(format!("appmanifest_{appid}.acf"))).ok()
+    })?;
+    let line = text.lines().find(|line| line.trim_start().starts_with("\"StateFlags\""))?;
+    let value: String = line.split('"').nth(3)?.chars().filter(char::is_ascii_digit).collect();
+    Some(value.parse::<u32>().ok()? != 4)
+}
+
+/// Réglages Steam du bouton central dans `localconfig.vdf`. Vrai : le bouton
+/// central ouvre encore Steam par-dessus Focus et les jeux.
+pub fn guide_focuses_steam(localconfig: &str) -> bool {
+    // Les deux réglages trouvés par l'utilisateur : « le bouton Guide place Steam au
+    // premier plan » et « configuration du bouton guide » (combinaisons). Absents,
+    // ils valent actif, comme dans Steam.
+    ["Controller_CheckGuideButton", "SteamController_Enable_Chord"].iter().any(|key| {
+        let quoted = format!("\"{key}\"");
+        localconfig
+            .lines()
+            .find(|line| line.trim_start().starts_with(&quoted))
+            .and_then(|line| line.split('"').nth(3))
+            .is_none_or(|value| value.trim() != "0")
+    })
+}
+
+/// Lecture seule : `localconfig.vdf` du compte Steam utilisé en dernier. `None`
+/// sans Steam ou sans compte.
+pub fn steam_guide_focus(steam_root: &Path) -> Option<bool> {
+    let newest = fs::read_dir(steam_root.join("userdata"))
+        .ok()?
+        .flatten()
+        .map(|user| user.path().join("config").join("localconfig.vdf"))
+        .filter_map(|path| Some((fs::metadata(&path).ok()?.modified().ok()?, path)))
+        .max_by_key(|(modified, _)| *modified)?;
+    Some(guide_focuses_steam(&fs::read_to_string(newest.1).ok()?))
+}
+
 /// Lit les `appmanifest_*.acf` de toutes les bibliothèques.
 pub fn scan_steam(steam_root: &Path) -> Result<Vec<Entry>, ScanError> {
     let mut entries = Vec::new();
@@ -366,6 +407,25 @@ pub fn scan_xbox(games_root: &Path, apps: &[StartApp]) -> Result<Vec<Entry>, Sca
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn steam_guide_setting_should_be_read_from_localconfig() {
+        let both_off = "	\"Controller_CheckGuideButton\"		\"0\"
+	\"SteamController_Enable_Chord\"		\"0\"
+";
+        assert!(!guide_focuses_steam(both_off));
+        assert!(guide_focuses_steam("	\"Controller_CheckGuideButton\"		\"1\"
+	\"SteamController_Enable_Chord\"		\"0\"
+"));
+        // Un seul des deux coupé ne suffit pas.
+        assert!(guide_focuses_steam("	\"Controller_CheckGuideButton\"		\"0\"
+"));
+        // Steam n'écrit la clé qu'une fois changée : absente, le défaut est actif.
+        assert!(guide_focuses_steam("\"UserLocalConfigStore\"
+{
+}
+"));
+    }
 
     type TestResult = Result<(), Box<dyn std::error::Error>>;
 

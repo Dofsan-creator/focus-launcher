@@ -1,7 +1,7 @@
 //! Instantané en lecture seule des processus et des services.
 
 use crate::wide::from_wide;
-use focus_core::model::{ProcessInfo, ServiceInfo, ServiceState, Snapshot};
+use focus_core::model::{ProcessInfo, ProcessRole, ServiceInfo, ServiceState, Snapshot};
 use focus_core::whitelist::normalize;
 use std::mem::size_of;
 use windows::core::{PCWSTR, PWSTR};
@@ -72,9 +72,45 @@ fn process_details(pid: u32) -> (u64, Option<String>, u64) {
     }
 }
 
+/// Session Windows d'un processus, sans l'ouvrir.
+pub fn session_of(pid: u32) -> Option<u32> {
+    let mut session = 0_u32;
+    // SAFETY: variable locale ; aucun handle n'est ouvert.
+    unsafe { windows::Win32::System::RemoteDesktop::ProcessIdToSessionId(pid, &mut session) }
+        .ok()
+        .map(|()| session)
+}
+
+/// Dossier de Windows en minuscules, avec sa barre finale.
+fn windows_dir() -> String {
+    let root = std::env::var("SystemRoot").unwrap_or_else(|_| "C:\\Windows".to_owned());
+    root.trim_end_matches('\\').to_lowercase() + "\\"
+}
+
+/// Place d'un processus dans la session : seuls les programmes du compte comptent.
+/// Une application a une fenêtre visible ; le reste, hors dossier de Windows, est de
+/// l'arrière-plan. Tout ce qui est illisible ou d'une autre session reste « système ».
+fn role_of(pid: u32, path: Option<&str>, own_session: Option<u32>, windowed: &[u32], windows_dir: &str) -> ProcessRole {
+    let Some(path) = path else {
+        return ProcessRole::System;
+    };
+    if pid == std::process::id() || own_session.is_none() || session_of(pid) != own_session {
+        ProcessRole::System
+    } else if windowed.contains(&pid) {
+        ProcessRole::App
+    } else if path.to_lowercase().starts_with(windows_dir) {
+        ProcessRole::System
+    } else {
+        ProcessRole::Background
+    }
+}
+
 /// Liste les processus. Un accès refusé n'est pas une erreur.
 pub fn processes() -> Vec<ProcessInfo> {
     let mut list = Vec::new();
+    let own_session = session_of(std::process::id());
+    let windowed = crate::console::app_window_pids();
+    let windows_dir = windows_dir();
     // SAFETY: le snapshot est fermé ; `entry` a sa taille renseignée.
     unsafe {
         let Ok(snapshot) = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) else {
@@ -92,6 +128,7 @@ pub fn processes() -> Vec<ProcessInfo> {
                 pid,
                 start_time,
                 name: normalize(&from_wide(&entry.szExeFile)),
+                role: role_of(pid, path.as_deref(), own_session, &windowed, &windows_dir),
                 path,
                 memory,
             });
@@ -195,6 +232,28 @@ pub fn process_names() -> Vec<String> {
         let _ = CloseHandle(snapshot);
     }
     names
+}
+
+/// Pids et noms des processus, sans ouvrir aucun processus (SPEC D7).
+pub fn process_ids() -> Vec<(u32, String)> {
+    let mut list = Vec::new();
+    // SAFETY: le snapshot est fermé ; `entry` a sa taille renseignée.
+    unsafe {
+        let Ok(snapshot) = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) else {
+            return list;
+        };
+        let mut entry = PROCESSENTRY32W {
+            dwSize: size_of::<PROCESSENTRY32W>() as u32,
+            ..Default::default()
+        };
+        let mut more = Process32FirstW(snapshot, &mut entry).is_ok();
+        while more {
+            list.push((entry.th32ProcessID, normalize(&from_wide(&entry.szExeFile))));
+            more = Process32NextW(snapshot, &mut entry).is_ok();
+        }
+        let _ = CloseHandle(snapshot);
+    }
+    list
 }
 
 /// L'un de ces exécutables tourne-t-il ?

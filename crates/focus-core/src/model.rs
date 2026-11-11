@@ -119,6 +119,23 @@ pub struct ProcessInfo {
     pub path: Option<String>,
     /// Mémoire utilisée en octets.
     pub memory: u64,
+    /// Place du processus dans la session, pour le balayage du mode console.
+    #[serde(default)]
+    pub role: ProcessRole,
+}
+
+/// Place d'un processus dans la session de l'utilisateur.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum ProcessRole {
+    /// Windows, un service, une autre session ou un programme illisible : jamais
+    /// touché par le balayage.
+    #[default]
+    System,
+    /// Application du compte avec une fenêtre visible.
+    App,
+    /// Programme du compte sans fenêtre, hors dossier de Windows.
+    Background,
 }
 
 /// État d'un service Windows.

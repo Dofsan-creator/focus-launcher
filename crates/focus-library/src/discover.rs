@@ -117,8 +117,30 @@ fn absent(prefix: &'static str) -> StoreScan {
     }
 }
 
-fn program_data() -> PathBuf {
+/// Dossier `ProgramData` de Windows.
+pub fn program_data() -> PathBuf {
     std::env::var_os("ProgramData").map_or_else(|| PathBuf::from("C:/ProgramData"), PathBuf::from)
+}
+
+/// Programmes installés : nom en minuscules et dossier (registre, lecture seule).
+pub fn installed_locations() -> Vec<(String, String)> {
+    registry::uninstall_records()
+        .into_iter()
+        .map(|record| (record.name.to_lowercase(), record.install_location))
+        .collect()
+}
+
+/// Noms des programmes installés (registre, lecture seule).
+pub fn installed_names() -> Vec<String> {
+    registry::uninstall_records()
+        .into_iter()
+        .map(|record| record.name.to_lowercase())
+        .collect()
+}
+
+/// Dossier d'installation de Steam, lu dans le registre (lecture seule).
+pub fn steam_root() -> Option<PathBuf> {
+    registry::steam_root()
 }
 
 /// `XboxGames` à la racine de chaque disque fixe.

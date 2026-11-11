@@ -112,6 +112,7 @@ family-playStation = PlayStation
 family-xbox = Xbox
 family-other = Nicht erkannt
 ctl-mode = Modus: { $mode }
+mode-auto = Auto
 mode-native = Nativ
 mode-steamInput = Steam Input
 mode-focusInput = Focus Input
@@ -166,3 +167,135 @@ hint-panel = Schnellleiste
 
 err-generic = Etwas ist schiefgelaufen. Details stehen im Protokoll.
 autostart-disabled = Der Launcher konnte zweimal nicht starten, daher wurde das Öffnen beim Anmelden ausgeschaltet.
+
+# Lumen : accueil, mode console, connexions, premier démarrage (à relire)
+top-search = Suchen
+hint-options = Optionen
+home-searching = Ergebnisse für „{ $text }“
+detail-remove-confirm = { $title } aus der Bibliothek entfernen?
+set-section-console = Konsolenmodus
+set-console = Windows in den Konsolenmodus versetzen, solange Focus geöffnet ist
+set-console-body = Die Taskleiste verschwindet und Benachrichtigungen schweigen. Beende Focus, um dein gewohntes Windows zurückzubekommen.
+set-hide-taskbar = Taskleiste ausblenden
+set-silence = Benachrichtigungen stummschalten
+set-start-minimized = Bei Sitzungsbeginn minimiert starten
+set-section-opt = Leistung
+set-section-sound = Ton und Anzeige
+set-music = Hintergrundmusik
+set-vibration = Controller-Vibration
+opt-off = Aus
+opt-off-body = Simulation: Du siehst, was sich ändern würde, nichts wird angefasst.
+opt-balanced = Ausgewogen
+opt-balanced-body = Hintergrund-Apps werden während einer Sitzung gebremst und danach wiederhergestellt.
+opt-max = Maximal
+opt-max-body = Alle erlaubten Hebel: Apps gebremst, Updates pausiert, Höchstleistung. Danach wird alles wiederhergestellt.
+power-quit-body = Windows kehrt in den Normalzustand zurück.
+power-restart-body = Startet den PC neu.
+power-shutdown-body = Schaltet den PC aus.
+con-title = Verbindungen
+con-wifi = WLAN
+con-bt = Bluetooth
+con-scan = Erneut suchen
+con-searching = Suche läuft …
+con-connected = Verbunden
+con-connected-to = Verbunden mit { $name }
+con-connect = Verbinden
+con-disconnected = Getrennt.
+con-password = Passwort
+con-none = Kein Netzwerk gefunden.
+con-ethernet = Kabelverbindung
+con-offline = Nicht verbunden
+con-result-success = Verbunden.
+con-result-badPassword = Falsches Passwort.
+con-result-timeout = Das Netzwerk hat nicht geantwortet.
+con-result-failed = Verbindung fehlgeschlagen.
+con-result-notFound = Netzwerk nicht gefunden. Suche erneut.
+con-result-noAdapter = Kein WLAN-Adapter gefunden.
+bt-paired = Deine Geräte
+bt-search = Geräte suchen
+bt-pair = Koppeln
+bt-pair-hint = Versetze das Gerät in den Kopplungsmodus und starte dann die Suche.
+bt-forget-confirm = { $name } entfernen?
+bt-forgotten = Gerät entfernt.
+bt-result-success = Gerät gekoppelt.
+bt-result-failed = Kopplung fehlgeschlagen.
+setup-step = Schritt { $current }
+setup-next = Weiter
+setup-back = Zurück
+setup-start = Los geht’s
+setup-console-title = Dein PC wird zur Konsole
+setup-console-body = Solange Focus geöffnet ist, tritt Windows zurück: keine Taskleiste, keine Benachrichtigungen. Beende Focus und alles ist wieder normal.
+setup-pad-title = Dein Controller
+setup-pad-body = Wähle, wie Tasten angezeigt werden. Focus funktioniert auch mit Maus und Tastatur.
+setup-net-title = Bleib verbunden
+setup-net-body = WLAN und Bluetooth sind immer nur eine Taste entfernt, auch während eines Spiels.
+setup-lib-title = Deine Bibliothek
+setup-lib-body = { $count ->
+    [one] { $count } Spiel oder App auf diesem PC gefunden.
+   *[other] { $count } Spiele und Apps auf diesem PC gefunden.
+}
+setup-opt-title = Leistung während der Sitzungen
+setup-opt-body = Focus kann deinen PC beim Spielen entlasten und danach alles zurücksetzen. Du entscheidest und kannst es später ändern.
+setup-comfort-title = Ton und Komfort
+setup-comfort-body = Stell die Atmosphäre ein. Öffnet sich Focus bei Sitzungsbeginn, startet dein PC wie eine Konsole.
+setup-done-title = Alles bereit
+setup-done-body = Deine Bibliothek wartet. Drücke „Los geht’s“, um einzutreten.
+setup-open-wifi = WLAN einrichten
+setup-open-bt = Controller koppeln
+store-installed = Installiert
+filter-stores = Stores
+launch-starting = Wird gestartet …
+store-open = Öffnen
+panel-screenshot = Bildschirmfoto
+shot-saved = Bildschirmfoto in Bilder\Focus gespeichert.
+detail-update = Update verfügbar
+detail-update-open = Aktualisieren
+power-sleep = Energie sparen
+power-sleep-body = Der PC geht in den Ruhezustand, wie eine Konsole.
+end-auto = Zurück zur Bibliothek …
+con-ethernet-on = Per Kabel verbunden (Ethernet)
+ctl-native-note = Außerhalb von Steam ersetzt Focus Input den PlayStation-Controller durch einen Xbox-Controller, den jedes Spiel versteht. Gegen doppelte Eingaben braucht es HidHide (im Focus-Store, Treiber): Focus verbirgt dann den echten Controller während des Spiels und gibt ihn danach zurück. Ohne HidHide lässt „Auto“ den Controller unverändert.
+steam-guide-on = In Steam holt die Mitteltaste des Controllers Steam noch vor deine Spiele. In Steam: Einstellungen, Controller, Erweiterte Einstellungen, die Option der Guide-Taste, die Steam in den Vordergrund holt, und die Guide-Tastenkombinationen ausschalten.
+steam-guide-off = Steam überlässt die Mitteltaste Focus.
+steam-guide-open = Steam-Controllereinstellungen öffnen
+
+# Mode console v2 : profil visible, bureau masqué, applications ouvertes (à relire)
+profile-busy = PC wird vorbereitet…
+profile-on = Konsolenmodus
+profile-off = Normalmodus
+unit-gb = GB
+profile-flash = Dein PC ist im Konsolenmodus
+profile-shell = Windows-Desktop ausgeblendet: Er kommt zurück, wenn du Focus beendest
+profile-freed = { $gb } GB Arbeitsspeicher für deine Spiele freigegeben
+profile-power = Volle Leistung eingeschaltet
+profile-slowed = { $count ->
+    [one] { $count } unnötiges Programm gebremst
+   *[other] { $count } unnötige Programme gebremst
+}
+profile-closed = { $count ->
+    [one] { $count } Programm geschlossen
+   *[other] { $count } Programme geschlossen
+}
+profile-paused = { $count ->
+    [one] { $count } Hintergrundaufgabe von Windows pausiert
+   *[other] { $count } Hintergrundaufgaben von Windows pausiert
+}
+profile-title = Was Focus für dich tut
+profile-lead = Solange Focus geöffnet ist, verhält sich dein PC wie eine Konsole: Alles, was ein Spiel nicht braucht, wird beiseitegelegt. Alles kommt zurück, wenn du Focus beendest.
+profile-lead-off = Der Desktop ist ausgeblendet, aber dein PC ist noch nicht fürs Spielen entlastet. Schalte die Leistung in den Einstellungen ein.
+profile-none = Dein PC ist im normalen Zustand. Schalte den Konsolenmodus in den Einstellungen ein, damit er sich wie eine Konsole verhält.
+profile-memory = Freier Arbeitsspeicher für deine Spiele
+profile-power-label = Leistung
+power-plan-balanced = Ausbalanciert
+power-plan-high = Maximal
+power-plan-saver = Energiesparen
+power-plan-other = Benutzerdefiniert
+apps-title = { $count ->
+    [one] { $count } App ist noch geöffnet
+   *[other] { $count } Apps sind noch geöffnet
+}
+apps-body = Sie zu schließen macht deinen PC frei fürs Spiel. Fragt eine davon nach dem Speichern, bleibt sie offen: Nichts geht verloren.
+apps-closing = Wird geschlossen…
+apps-close = Schließen
+apps-keep = Offen lassen
+set-stop-shell = Windows-Desktop vollständig ausblenden

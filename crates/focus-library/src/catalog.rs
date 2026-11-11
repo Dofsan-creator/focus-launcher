@@ -15,6 +15,8 @@ pub enum Category {
     Store,
     /// Application sociale, filtre Social.
     Social,
+    /// Pilote ou bibliothèque nécessaire aux jeux (Visual C++, DirectX, .NET).
+    Runtime,
 }
 
 /// Une application du catalogue.
@@ -72,8 +74,9 @@ mod tests {
 
     #[test]
     fn winget_ids_should_stay_plain_identifiers() -> Result<(), serde_json::Error> {
-        // L'identifiant finit en argument de winget : aucun caractère de shell.
-        let safe = |id: &str| id.chars().all(|c| c.is_ascii_alphanumeric() || c == '.');
+        // L'identifiant finit en argument de winget, appelé sans shell : lettres,
+        // chiffres, points, et le « + » de l'identifiant officiel de Visual C++.
+        let safe = |id: &str| id.chars().all(|c| c.is_ascii_alphanumeric() || c == '.' || c == '+');
         assert!(load()?.iter().all(|app| safe(&app.winget_id)));
         Ok(())
     }

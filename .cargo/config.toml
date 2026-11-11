@@ -1,0 +1,4 @@
+# Bibliothèque C de Visual C++ liée dans les exécutables : l'installeur marche sur un
+# Windows neuf, sans « Visual C++ Redistributable » (focus-guardian en dépendait).
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "target-feature=+crt-static"]

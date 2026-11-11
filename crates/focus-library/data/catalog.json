@@ -1,13 +1,146 @@
 [
-  { "id": "steam", "name": "Steam", "category": "store", "wingetId": "Valve.Steam", "officialPage": "https://store.steampowered.com/about/", "publisher": "Valve", "processName": "steam" },
-  { "id": "epic", "name": "Epic Games Launcher", "category": "store", "wingetId": "EpicGames.EpicGamesLauncher", "officialPage": "https://epicgames.com/download", "publisher": "Epic Games", "processName": "epicgameslauncher" },
-  { "id": "ea", "name": "EA app", "category": "store", "wingetId": "ElectronicArts.EADesktop", "officialPage": "https://www.ea.com/ea-app", "publisher": "Electronic Arts", "processName": "eadesktop" },
-  { "id": "gog", "name": "GOG Galaxy", "category": "store", "wingetId": "GOG.Galaxy", "officialPage": "https://www.gog.com/galaxy", "publisher": "GOG", "processName": "galaxyclient" },
-  { "id": "ubisoft", "name": "Ubisoft Connect", "category": "store", "wingetId": "Ubisoft.Connect", "officialPage": "https://ubisoftconnect.com/", "publisher": "Ubisoft", "processName": "upc" },
-  { "id": "battlenet", "name": "Battle.net", "category": "store", "wingetId": "Blizzard.BattleNet", "officialPage": "https://download.battle.net/en-us/desktop", "publisher": "Blizzard Entertainment", "processName": "battle.net" },
-  { "id": "discord", "name": "Discord", "category": "social", "wingetId": "Discord.Discord", "officialPage": "https://discord.com/download", "publisher": "Discord", "processName": "discord" },
-  { "id": "obs", "name": "OBS Studio", "category": "social", "wingetId": "OBSProject.OBSStudio", "officialPage": "https://obsproject.com/", "publisher": "OBS Project", "processName": "obs64" },
-  { "id": "spotify", "name": "Spotify", "category": "social", "wingetId": "Spotify.Spotify", "officialPage": "https://www.spotify.com/download/windows/", "publisher": "Spotify", "processName": "spotify" },
-  { "id": "teamspeak", "name": "TeamSpeak", "category": "social", "wingetId": "TeamSpeakSystems.TeamSpeakClient", "officialPage": "https://www.teamspeak.com/en/", "publisher": "TeamSpeak Systems", "processName": "teamspeak" },
-  { "id": "mumble", "name": "Mumble", "category": "social", "wingetId": "Mumble.Mumble.Client", "officialPage": "https://www.mumble.info/", "publisher": "Mumble", "processName": "mumble" }
+  {
+    "id": "steam",
+    "name": "Steam",
+    "category": "store",
+    "wingetId": "Valve.Steam",
+    "officialPage": "https://store.steampowered.com/about/",
+    "publisher": "Valve",
+    "processName": "steam"
+  },
+  {
+    "id": "epic",
+    "name": "Epic Games Launcher",
+    "category": "store",
+    "wingetId": "EpicGames.EpicGamesLauncher",
+    "officialPage": "https://epicgames.com/download",
+    "publisher": "Epic Games",
+    "processName": "epicgameslauncher"
+  },
+  {
+    "id": "ea",
+    "name": "EA app",
+    "category": "store",
+    "wingetId": "ElectronicArts.EADesktop",
+    "officialPage": "https://www.ea.com/ea-app",
+    "publisher": "Electronic Arts",
+    "processName": "eadesktop"
+  },
+  {
+    "id": "gog",
+    "name": "GOG Galaxy",
+    "category": "store",
+    "wingetId": "GOG.Galaxy",
+    "officialPage": "https://www.gog.com/galaxy",
+    "publisher": "GOG",
+    "processName": "galaxyclient"
+  },
+  {
+    "id": "ubisoft",
+    "name": "Ubisoft Connect",
+    "category": "store",
+    "wingetId": "Ubisoft.Connect",
+    "officialPage": "https://ubisoftconnect.com/",
+    "publisher": "Ubisoft",
+    "processName": "upc"
+  },
+  {
+    "id": "battlenet",
+    "name": "Battle.net",
+    "category": "store",
+    "wingetId": "Blizzard.BattleNet",
+    "officialPage": "https://download.battle.net/en-us/desktop",
+    "publisher": "Blizzard Entertainment",
+    "processName": "battle.net"
+  },
+  {
+    "id": "discord",
+    "name": "Discord",
+    "category": "social",
+    "wingetId": "Discord.Discord",
+    "officialPage": "https://discord.com/download",
+    "publisher": "Discord",
+    "processName": "discord"
+  },
+  {
+    "id": "obs",
+    "name": "OBS Studio",
+    "category": "social",
+    "wingetId": "OBSProject.OBSStudio",
+    "officialPage": "https://obsproject.com/",
+    "publisher": "OBS Project",
+    "processName": "obs64"
+  },
+  {
+    "id": "spotify",
+    "name": "Spotify",
+    "category": "social",
+    "wingetId": "Spotify.Spotify",
+    "officialPage": "https://www.spotify.com/download/windows/",
+    "publisher": "Spotify",
+    "processName": "spotify"
+  },
+  {
+    "id": "teamspeak",
+    "name": "TeamSpeak",
+    "category": "social",
+    "wingetId": "TeamSpeakSystems.TeamSpeakClient",
+    "officialPage": "https://www.teamspeak.com/en/",
+    "publisher": "TeamSpeak Systems",
+    "processName": "teamspeak"
+  },
+  {
+    "id": "mumble",
+    "name": "Mumble",
+    "category": "social",
+    "wingetId": "Mumble.Mumble.Client",
+    "officialPage": "https://www.mumble.info/",
+    "publisher": "Mumble",
+    "processName": "mumble"
+  },
+  {
+    "id": "vcredist",
+    "name": "Visual C++ Redistributable",
+    "category": "runtime",
+    "wingetId": "Microsoft.VCRedist.2015+.x64",
+    "officialPage": "https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist",
+    "publisher": "Microsoft",
+    "processName": "vc_redist.x64"
+  },
+  {
+    "id": "directx",
+    "name": "DirectX End-User Runtime",
+    "category": "runtime",
+    "wingetId": "Microsoft.DirectX",
+    "officialPage": "https://www.microsoft.com/download/details.aspx?id=35",
+    "publisher": "Microsoft",
+    "processName": "dxsetup"
+  },
+  {
+    "id": "dotnet",
+    "name": ".NET Desktop Runtime 8",
+    "category": "runtime",
+    "wingetId": "Microsoft.DotNet.DesktopRuntime.8",
+    "officialPage": "https://dotnet.microsoft.com/download/dotnet/8.0",
+    "publisher": "Microsoft",
+    "processName": "dotnet"
+  },
+  {
+    "id": "vigembus",
+    "name": "ViGEm Bus Driver",
+    "category": "runtime",
+    "wingetId": "ViGEm.ViGEmBus",
+    "officialPage": "https://github.com/nefarius/ViGEmBus",
+    "publisher": "Nefarius Software Solutions",
+    "processName": "vigembus"
+  },
+  {
+    "id": "hidhide",
+    "name": "HidHide",
+    "category": "runtime",
+    "wingetId": "Nefarius.HidHide",
+    "officialPage": "https://github.com/nefarius/HidHide",
+    "publisher": "Nefarius Software Solutions",
+    "processName": "hidhideclient"
+  }
 ]

@@ -11,7 +11,7 @@
       "cwd": "../focus-ui"
     },
     "beforeBuildCommand": {
-      "script": "trunk build --release && cargo build -p focus-guardian --release",
+      "script": "trunk build --release && cargo build -p focus-guardian --release --target x86_64-pc-windows-msvc",
       "cwd": "../focus-ui"
     }
   },
@@ -29,7 +29,7 @@
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' data: asset: http://asset.localhost; style-src 'self' 'unsafe-inline'; script-src 'self' 'wasm-unsafe-eval'; connect-src ipc: http://ipc.localhost",
+      "csp": "default-src 'self'; img-src 'self' data: http://focusart.localhost focusart:; style-src 'self' 'unsafe-inline'; script-src 'self' 'wasm-unsafe-eval'; connect-src 'self' ipc: http://ipc.localhost",
       "capabilities": [
         "default"
       ]
@@ -46,7 +46,33 @@
     ],
     "license": "GPL-3.0-or-later",
     "resources": {
-      "../../target/release/focus-guardian.exe": "focus-guardian.exe"
-    }
+      "../../target/x86_64-pc-windows-msvc/release/focus-guardian.exe": "guardian/focus-guardian.exe"
+    },
+    "windows": {
+      "webviewInstallMode": {
+        "type": "offlineInstaller",
+        "silent": true
+      },
+      "nsis": {
+        "installMode": "perMachine",
+        "languages": [
+          "French",
+          "English",
+          "Spanish",
+          "German",
+          "Italian",
+          "PortugueseBR",
+          "Russian",
+          "Japanese",
+          "Korean",
+          "SimpChinese",
+          "Arabic"
+        ],
+        "displayLanguageSelector": true,
+        "installerHooks": "./nsis-hooks.nsh"
+      }
+    },
+    "shortDescription": "Lanceur plein écran qui transforme Windows en console",
+    "publisher": "Dofsan"
   }
 }

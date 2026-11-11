@@ -109,6 +109,7 @@ family-playStation = PlayStation
 family-xbox = Xbox
 family-other = 未検出
 ctl-mode = モード: { $mode }
+mode-auto = 自動
 mode-native = ネイティブ
 mode-steamInput = Steam Input
 mode-focusInput = Focus Input
@@ -163,3 +164,130 @@ hint-panel = クイックパネル
 
 err-generic = 問題が発生しました。詳細はログにあります。
 autostart-disabled = 起動に 2 回失敗したため、サインイン時に開く設定をオフにしました。
+
+# Lumen : accueil, mode console, connexions, premier démarrage (à relire)
+top-search = 検索
+hint-options = オプション
+home-searching = 「{ $text }」の検索結果
+detail-remove-confirm = { $title } をライブラリから削除しますか？
+set-section-console = コンソールモード
+set-console = Focus を開いている間、Windows をコンソールモードにする
+set-console-body = タスクバーが隠れ、通知が静かになります。Focus を終了すると、いつもの Windows に戻ります。
+set-hide-taskbar = タスクバーを隠す
+set-silence = 通知をミュートする
+set-start-minimized = サインイン時に最小化して起動する
+set-section-opt = パフォーマンス
+set-section-sound = サウンドと表示
+set-music = BGM
+set-vibration = コントローラーの振動
+opt-off = オフ
+opt-off-body = シミュレーション：変更内容を確認するだけで、何も変更しません。
+opt-balanced = バランス
+opt-balanced-body = セッション中はバックグラウンドアプリを抑え、終了後に元へ戻します。
+opt-max = 最大
+opt-max-body = 許可されたすべての手段：アプリを抑え、更新を一時停止し、高パフォーマンスにします。終了後にすべて元に戻します。
+power-quit-body = Windows が通常の状態に戻ります。
+power-restart-body = PC を再起動します。
+power-shutdown-body = PC の電源を切ります。
+con-title = 接続
+con-wifi = Wi-Fi
+con-bt = Bluetooth
+con-scan = もう一度検索
+con-searching = 検索中…
+con-connected = 接続済み
+con-connected-to = { $name } に接続済み
+con-connect = 接続
+con-disconnected = 切断しました。
+con-password = パスワード
+con-none = ネットワークが見つかりません。
+con-ethernet = 有線接続
+con-offline = 未接続
+con-result-success = 接続しました。
+con-result-badPassword = パスワードが正しくありません。
+con-result-timeout = ネットワークから応答がありません。
+con-result-failed = 接続できませんでした。
+con-result-notFound = ネットワークが見つかりません。もう一度検索してください。
+con-result-noAdapter = Wi-Fi アダプターが見つかりません。
+bt-paired = お使いのデバイス
+bt-search = デバイスを探す
+bt-pair = ペアリング
+bt-pair-hint = デバイスをペアリングモードにしてから検索してください。
+bt-forget-confirm = { $name } を削除しますか？
+bt-forgotten = デバイスを削除しました。
+bt-result-success = ペアリングしました。
+bt-result-failed = ペアリングできませんでした。
+setup-step = ステップ { $current }
+setup-next = 次へ
+setup-back = 戻る
+setup-start = はじめる
+setup-console-title = PC がコンソールに変わります
+setup-console-body = Focus を開いている間、Windows は表に出ません。タスクバーも通知もありません。Focus を終了すれば元どおりです。
+setup-pad-title = コントローラー
+setup-pad-body = ボタンの表示方法を選んでください。Focus はマウスとキーボードでも使えます。
+setup-net-title = いつでも接続
+setup-net-body = Wi-Fi と Bluetooth は、ゲーム中でもボタンひとつで開けます。
+setup-lib-title = ライブラリ
+setup-lib-body = { $count ->
+   *[other] この PC で { $count } 件のゲームとアプリが見つかりました。
+}
+setup-opt-title = セッション中のパフォーマンス
+setup-opt-body = Focus はプレイ中に PC の負荷を減らし、終了後にすべて元へ戻せます。あとから変更することもできます。
+setup-comfort-title = サウンドと快適さ
+setup-comfort-body = 雰囲気を調整しましょう。サインイン時に Focus を開くと、PC がコンソールのように起動します。
+setup-done-title = 準備完了
+setup-done-body = ライブラリの準備ができました。「はじめる」を押して入りましょう。
+setup-open-wifi = Wi-Fi を設定
+setup-open-bt = コントローラーをペアリング
+store-installed = インストール済み
+filter-stores = ストア
+launch-starting = 起動中…
+store-open = 開く
+panel-screenshot = スクリーンショット
+shot-saved = スクリーンショットをピクチャ\Focus に保存しました。
+detail-update = アップデートがあります
+detail-update-open = アップデート
+power-sleep = スリープ
+power-sleep-body = コンソールのレストモードのように PC をスリープします。
+end-auto = ライブラリに戻ります…
+con-ethernet-on = 有線接続 (Ethernet)
+ctl-native-note = Steam 以外では、Focus Input が PlayStation コントローラーを、すべてのゲームが認識する Xbox コントローラーに置き換えます。入力の重複を防ぐには HidHide（Focus のストアのドライバー）が必要です。プレイ中は本物のコントローラーをゲームから隠し、終了後に戻します。HidHide がない場合、「自動」はコントローラーをそのままにします。
+steam-guide-on = Steam では、コントローラーの中央ボタンでまだゲームの上に Steam が開きます。Steam の 設定 > コントローラー > 詳細設定 で、ガイドボタンで Steam を前面に出すオプションと、ガイドボタンのコード設定をオフにしてください。
+steam-guide-off = Steam は中央ボタンを Focus に任せています。
+steam-guide-open = Steam のコントローラー設定を開く
+
+# Mode console v2 : profil visible, bureau masqué, applications ouvertes (à relire)
+profile-busy = PC を準備中…
+profile-on = コンソールモード
+profile-off = 通常モード
+unit-gb = GB
+profile-flash = PC がコンソールモードになりました
+profile-shell = Windows のデスクトップを非表示にしました。Focus を終了すると戻ります
+profile-freed = ゲームのために { $gb } GB のメモリを空けました
+profile-power = 最大パワーに切り替えました
+profile-slowed = { $count ->
+   *[other] 不要なプログラム { $count } 個の動作を抑えました
+}
+profile-closed = { $count ->
+   *[other] プログラム { $count } 個を閉じました
+}
+profile-paused = { $count ->
+   *[other] Windows の裏方の作業 { $count } 個を一時停止しました
+}
+profile-title = Focus がしてくれること
+profile-lead = Focus を開いている間、PC はゲーム機のように動きます。ゲームに必要のないものは脇に置かれ、Focus を終了するとすべて元に戻ります。
+profile-lead-off = デスクトップは非表示ですが、PC はまだゲーム向けに軽くなっていません。設定でパフォーマンスを有効にしてください。
+profile-none = PC は通常の状態です。設定でコンソールモードを有効にすると、ゲーム機のように動きます。
+profile-memory = ゲームに使える空きメモリ
+profile-power-label = パワー
+power-plan-balanced = バランス
+power-plan-high = 最大
+power-plan-saver = 省電力
+power-plan-other = カスタム
+apps-title = { $count ->
+   *[other] アプリが { $count } 個まだ開いています
+}
+apps-body = 閉じると PC をゲームに集中させられます。保存を求めるアプリは開いたままになるので、何も失われません。
+apps-closing = 閉じています…
+apps-close = 閉じる
+apps-keep = 開いたままにする
+set-stop-shell = Windows のデスクトップを完全に隠す

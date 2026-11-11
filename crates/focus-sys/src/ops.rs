@@ -129,6 +129,8 @@ fn awake_thread() -> Sender<()> {
 struct CloseSearch {
     pid: u32,
     found: bool,
+    /// Windows a refusé le message : le jeu tourne en administrateur (UIPI).
+    denied: bool,
 }
 
 unsafe extern "system" fn post_close(window: HWND, param: LPARAM) -> BOOL {
@@ -140,7 +142,9 @@ unsafe extern "system" fn post_close(window: HWND, param: LPARAM) -> BOOL {
         GetWindowThreadProcessId(window, Some(&mut pid));
         if pid == search.pid && IsWindowVisible(window).as_bool() {
             search.found = true;
-            let _ = PostMessageW(window, WM_CLOSE, WPARAM(0), LPARAM(0));
+            if PostMessageW(window, WM_CLOSE, WPARAM(0), LPARAM(0)).is_err() {
+                search.denied = true;
+            }
         }
     }
     true.into()
@@ -148,7 +152,7 @@ unsafe extern "system" fn post_close(window: HWND, param: LPARAM) -> BOOL {
 
 /// Demande la fermeture des fenêtres d'un processus. Renvoie faux s'il n'en a pas.
 pub fn request_close(pid: u32) -> bool {
-    let mut search = CloseSearch { pid, found: false };
+    let mut search = CloseSearch { pid, found: false, denied: false };
     // SAFETY: `search` survit à l'appel synchrone.
     let _ = unsafe {
         EnumWindows(
@@ -156,7 +160,10 @@ pub fn request_close(pid: u32) -> bool {
             LPARAM(std::ptr::from_mut(&mut search) as isize),
         )
     };
-    search.found
+    if search.denied {
+        tracing::warn!("close refused by Windows for pid {pid}: the game runs as administrator");
+    }
+    search.found && !search.denied
 }
 
 /// Attend la fin d'un processus observé.
@@ -284,8 +291,13 @@ impl SystemOps for WinOps {
     }
 
     fn close(&mut self, process: &ProcessInfo, allow_force: bool) -> Result<(), OpError> {
-        request_close(process.pid);
-        if wait_gone(process, CLOSE_TIMEOUT) {
+        let asked = request_close(process.pid);
+        // Sans fenêtre à qui le demander, attendre ne sert à rien (Game Bar faisait
+        // perdre 20 secondes à chaque ouverture de Focus).
+        if !asked && !allow_force {
+            return Err(OpError(format!("{} has no window to close", process.name)));
+        }
+        if asked && wait_gone(process, CLOSE_TIMEOUT) {
             return Ok(());
         }
         if allow_force {
@@ -295,6 +307,16 @@ impl SystemOps for WinOps {
     }
 
     fn relaunch(&mut self, path: &str, args: &[String]) -> Result<(), OpError> {
+        // Application du Windows Store : Windows refuse de la lancer par son chemin
+        // et la relance lui-même quand elle sert.
+        if is_packaged(path) {
+            return Ok(());
+        }
+        // Droits normaux de l'utilisateur, jamais ceux de Focus.
+        let line = args.iter().map(|arg| format!("\"{arg}\"")).collect::<Vec<_>>().join(" ");
+        if crate::unelevated::open(path, &line, "") {
+            return Ok(());
+        }
         Command::new(path)
             .args(args)
             .spawn()
@@ -317,9 +339,43 @@ impl SystemOps for WinOps {
     }
 }
 
+/// Le chemin est-il celui d'une application du Windows Store ?
+fn is_packaged(path: &str) -> bool {
+    path.to_lowercase().contains("\\windowsapps\\")
+}
+
 /// Encode une valeur pour un futur appel Windows (utilitaire de ce module).
 pub fn pcwstr_owned(text: &str) -> (Vec<u16>, PCWSTR) {
     let buffer = wide(text);
     let pointer = PCWSTR(buffer.as_ptr());
     (buffer, pointer)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn store_app_should_be_left_to_windows_at_restore() {
+        let mut ops = WinOps::new(None);
+        let path = "C:\\Program Files\\WindowsApps\\Microsoft.XboxGamingOverlay_7.326.10141.0_x64__8wekyb3d8bbwe\\GameBar.exe";
+        assert_eq!(ops.relaunch(path, &[]), Ok(()));
+    }
+
+    #[test]
+    fn windowless_process_should_fail_at_once_instead_of_waiting() {
+        let mut ops = WinOps::new(None);
+        // Ce test lui-même : un processus sans fenêtre.
+        let own = ProcessInfo {
+            pid: std::process::id(),
+            start_time: scan::process_start_time(std::process::id()).unwrap_or(0),
+            name: "test".to_owned(),
+            path: None,
+            memory: 0,
+            role: focus_core::model::ProcessRole::System,
+        };
+        let started = Instant::now();
+        assert!(ops.close(&own, false).is_err());
+        assert!(started.elapsed() < Duration::from_secs(2));
+    }
 }

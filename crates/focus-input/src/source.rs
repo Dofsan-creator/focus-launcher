@@ -10,9 +10,79 @@ use windows::Win32::UI::Input::XboxController::{
     XINPUT_GAMEPAD_DPAD_UP, XINPUT_GAMEPAD_LEFT_SHOULDER, XINPUT_GAMEPAD_RIGHT_SHOULDER,
     XINPUT_GAMEPAD_START, XINPUT_GAMEPAD_X, XINPUT_GAMEPAD_Y, XINPUT_STATE,
 };
+use windows::Win32::UI::Input::XboxController::{
+    XInputGetBatteryInformation, XInputSetState, BATTERY_DEVTYPE_GAMEPAD, BATTERY_TYPE_DISCONNECTED,
+    BATTERY_TYPE_WIRED, XINPUT_BATTERY_INFORMATION, XINPUT_VIBRATION,
+};
 
 const ERROR_SUCCESS: u32 = 0;
+/// Bit du bouton central dans l’état étendu (non documenté, utilisé par SDL et Chromium).
+const XINPUT_GUIDE: u16 = 0x0400;
+
+type GetStateEx = unsafe extern "system" fn(u32, *mut XinputStateEx) -> u32;
+
+#[repr(C)]
+#[derive(Default)]
+struct XinputStateEx {
+    state: XINPUT_STATE,
+    _reserved: u32,
+}
+
+/// Fonction étendue d’XInput (ordinal 100), qui expose le bouton central.
+fn get_state_ex() -> Option<GetStateEx> {
+    static CELL: std::sync::OnceLock<Option<usize>> = std::sync::OnceLock::new();
+    let address = *CELL.get_or_init(|| {
+        use windows::core::{w, PCSTR};
+        use windows::Win32::System::LibraryLoader::{GetProcAddress, LoadLibraryW};
+        // SAFETY: bibliothèque système ; l’ordinal 100 est l’adresse attendue.
+        unsafe {
+            let module = LoadLibraryW(w!("xinput1_4.dll")).ok()?;
+            GetProcAddress(module, PCSTR(100 as *const u8)).map(|f| f as usize)
+        }
+    });
+    // SAFETY: adresse issue de GetProcAddress, signature de l’état étendu.
+    address.map(|address| unsafe { std::mem::transmute::<usize, GetStateEx>(address) })
+}
+
+/// Le bouton central de la manette XInput est-il enfoncé ?
+fn guide_pressed(index: u32) -> bool {
+    let Some(get) = get_state_ex() else {
+        return false;
+    };
+    let mut state = XinputStateEx::default();
+    // SAFETY: structure locale de la taille attendue par la fonction étendue.
+    let code = unsafe { get(index, &mut state) };
+    code == ERROR_SUCCESS && state.state.Gamepad.wButtons.0 & XINPUT_GUIDE != 0
+}
 const TRIGGER_THRESHOLD: u8 = 128;
+
+/// Fait vibrer la manette XInput `index` (force de 0 à 65535 par moteur).
+/// Sans manette, l'appel échoue en silence.
+pub fn rumble(index: u32, left: u16, right: u16) {
+    let vibration = XINPUT_VIBRATION {
+        wLeftMotorSpeed: left,
+        wRightMotorSpeed: right,
+    };
+    // SAFETY: structure locale valide, lue seulement pendant l'appel.
+    unsafe {
+        let _ = XInputSetState(index, &vibration);
+    }
+}
+
+/// Batterie de la manette XInput, de 0 (vide) à 3 (pleine). `None` si elle est
+/// filaire, absente ou inconnue.
+pub fn battery(index: u32) -> Option<u8> {
+    let mut info = XINPUT_BATTERY_INFORMATION::default();
+    // SAFETY: structure locale valide, de la taille attendue.
+    let code = unsafe { XInputGetBatteryInformation(index, BATTERY_DEVTYPE_GAMEPAD, &mut info) };
+    if code != ERROR_SUCCESS
+        || info.BatteryType == BATTERY_TYPE_WIRED
+        || info.BatteryType == BATTERY_TYPE_DISCONNECTED
+    {
+        return None;
+    }
+    Some(info.BatteryLevel.0)
+}
 
 /// Lit la manette XInput `index` (0 à 3). `None` si elle est absente.
 pub fn read_xinput(index: u32) -> Option<PadState> {
@@ -23,6 +93,7 @@ pub fn read_xinput(index: u32) -> Option<PadState> {
         return None;
     }
     let pad = state.Gamepad;
+    let guide = guide_pressed(index);
     let map = [
         (XINPUT_GAMEPAD_A, Button::South),
         (XINPUT_GAMEPAD_B, Button::East),
@@ -47,6 +118,9 @@ pub fn read_xinput(index: u32) -> Option<PadState> {
     }
     if pad.bRightTrigger > TRIGGER_THRESHOLD {
         pressed.push(Button::RightTrigger);
+    }
+    if guide {
+        pressed.push(Button::Guide);
     }
     let axis = |value: i16| f32::from(value) / f32::from(i16::MAX);
     Some(PadState {
@@ -139,6 +213,11 @@ impl VirtualPad {
             thumb_ry: report.thumb_ry,
         })
     }
+}
+
+/// HidHide (masquage de la vraie manette) est installé.
+pub fn hidhide_present() -> bool {
+    std::path::Path::new(r"C:\Program Files\Nefarius Software Solutions\HidHide").is_dir()
 }
 
 /// Le pilote ViGEmBus est-il présent ?

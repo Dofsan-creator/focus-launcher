@@ -6,13 +6,12 @@ use tauri::AppHandle;
 
 #[cfg(windows)]
 pub fn spawn(app: AppHandle, state: Arc<App>) {
-    use crate::commands::show_launcher;
     use focus_core::model::Store;
     use focus_input::actions::{Action, ActionMapper};
     use focus_input::focus_input::to_xreport;
     use focus_input::modes::{resolve_mode, Environment, Mode};
     use focus_input::pad::{Family, PadState};
-    use focus_input::source::{read_xinput, vigem_present, HidPad, VirtualPad};
+    use focus_input::source::{read_xinput, rumble, vigem_present, HidPad, VirtualPad};
     use std::sync::atomic::Ordering;
     use std::time::{Duration, Instant};
     use tauri::Emitter;
@@ -32,6 +31,9 @@ pub fn spawn(app: AppHandle, state: Arc<App>) {
         let mut last_scan = Instant::now() - RESCAN;
         let mut last_family = None;
         let started = Instant::now();
+        let hidhide_present = focus_input::source::hidhide_present();
+        // Fin de la vibration en cours : l'impulsion reste brève, sans bloquer la boucle.
+        let mut rumble_until: Option<(u32, Instant)> = None;
         loop {
             if hid.is_none() && last_scan.elapsed() >= RESCAN {
                 hid = HidPad::open_first();
@@ -48,8 +50,8 @@ pub fn spawn(app: AppHandle, state: Arc<App>) {
             let in_session = state.in_session.load(Ordering::SeqCst);
 
             // Focus Input : pendant un jeu hors Steam, la DualShock 4 devient une
-            // manette Xbox virtuelle. Sans HidHide, le jeu peut voir les deux
-            // manettes : c'est le repli prévu par la v2 (cas 7), signalé dans l'interface.
+            // manette Xbox virtuelle. Sans HidHide, le jeu verrait les deux
+            // manettes : le mode n'est alors pris que sur choix explicite (`resolve_mode`).
             let engine_wanted = in_session
                 && hid.is_some()
                 && !engine_failed
@@ -61,7 +63,7 @@ pub fn spawn(app: AppHandle, state: Arc<App>) {
                     Environment {
                         steam_running: false,
                         vigem_present: true,
-                        hidhide_present: false,
+                        hidhide_present,
                     },
                     state.settings().controller_mode,
                 ) == Mode::FocusInput;
@@ -91,14 +93,17 @@ pub fn spawn(app: AppHandle, state: Arc<App>) {
             }
 
             // La manette virtuelle apparaît aussi en XInput : on l'ignore alors.
-            let xbox = if virtual_pad.is_some() {
+            let xbox_pad = if virtual_pad.is_some() {
                 None
             } else {
-                (0..4).find_map(read_xinput)
+                (0..4).find_map(|index| read_xinput(index).map(|pad| (index, pad)))
             };
+            let xbox = xbox_pad.as_ref().map(|(_, pad)| pad.clone());
             // Dernière manette utilisée : l'activité décide de la manette active.
             let (active, family) = match (&sony, &xbox) {
-                (Some(s), _) if s.has_activity() || xbox.is_none() => {
+                // Une manette PlayStation branchée garde ses symboles, même si Steam
+                // en montre aussi une copie Xbox.
+                (Some(s), _) => {
                     (s.clone(), Some(Family::PlayStation))
                 }
                 (_, Some(x)) => (x.clone(), Some(Family::Xbox)),
@@ -110,13 +115,30 @@ pub fn spawn(app: AppHandle, state: Arc<App>) {
             }
             let now = started.elapsed().as_millis() as u64;
             for action in mapper.update(&active, now) {
-                if in_session {
-                    if matches!(action, Action::QuickPanel | Action::QuickSettings) {
-                        show_launcher(&app);
+                // En jeu, Focus ne réagit qu’au bouton central, sauf quand son menu est
+                // affiché : alors Retour, les flèches et Valider lui reviennent aussi.
+                if in_session && !crate::commands::launcher_visible(&app) {
+                    if matches!(action, Action::QuickPanel | Action::QuickSettings | Action::Home) {
+                        crate::commands::back_to_launcher(&app);
                         let _ = app.emit("pad-action", action);
                     }
                 } else {
+                    if matches!(action, Action::Home) {
+                        crate::commands::back_to_launcher(&app);
+                    }
                     let _ = app.emit("pad-action", action);
+                    // Retour sensoriel léger, plus marqué pour valider (spec v1, 6.5).
+                    if let Some((index, _)) = xbox_pad.as_ref().filter(|_| state.settings().vibration) {
+                        let strength = if matches!(action, Action::Confirm) { 14_000 } else { 6_000 };
+                        rumble(*index, strength, strength);
+                        rumble_until = Some((*index, Instant::now() + Duration::from_millis(40)));
+                    }
+                }
+            }
+            if let Some((index, until)) = rumble_until {
+                if Instant::now() >= until {
+                    rumble(index, 0, 0);
+                    rumble_until = None;
                 }
             }
             std::thread::sleep(if virtual_pad.is_some() {

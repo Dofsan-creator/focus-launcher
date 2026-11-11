@@ -4,6 +4,7 @@
 //! testable, et échoue proprement : un format changé n'arrête jamais le launcher.
 #![deny(missing_docs)]
 
+pub mod art;
 pub mod catalog;
 pub mod discover;
 pub mod exe_score;

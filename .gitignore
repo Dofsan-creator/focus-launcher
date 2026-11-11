@@ -8,3 +8,10 @@ system-report.md
 session.lock.json
 .env
 crates/focus-app/gen/
+
+# Installeur copié à la racine pour le transfert vers un autre PC
+/*-setup.exe
+
+# Fichiers personnels à la racine : captures et archive de l'installeur
+/*.rar
+/Capture d*.png

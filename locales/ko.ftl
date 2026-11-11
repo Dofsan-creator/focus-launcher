@@ -109,6 +109,7 @@ family-playStation = PlayStation
 family-xbox = Xbox
 family-other = 감지되지 않음
 ctl-mode = 모드: { $mode }
+mode-auto = 자동
 mode-native = 기본
 mode-steamInput = Steam Input
 mode-focusInput = Focus Input
@@ -163,3 +164,130 @@ hint-panel = 빠른 패널
 
 err-generic = 문제가 발생했습니다. 자세한 내용은 로그에 있습니다.
 autostart-disabled = 런처가 두 번 연속 시작에 실패하여 로그인할 때 열기를 껐습니다.
+
+# Lumen : accueil, mode console, connexions, premier démarrage (à relire)
+top-search = 검색
+hint-options = 옵션
+home-searching = “{ $text }” 검색 결과
+detail-remove-confirm = 라이브러리에서 { $title }을(를) 제거할까요?
+set-section-console = 콘솔 모드
+set-console = Focus가 열려 있는 동안 Windows를 콘솔 모드로 전환
+set-console-body = 작업 표시줄이 숨겨지고 알림이 조용해집니다. Focus를 종료하면 평소의 Windows로 돌아갑니다.
+set-hide-taskbar = 작업 표시줄 숨기기
+set-silence = 알림 끄기
+set-start-minimized = 로그인 시 최소화 상태로 시작
+set-section-opt = 성능
+set-section-sound = 소리 및 화면
+set-music = 배경 음악
+set-vibration = 컨트롤러 진동
+opt-off = 끄기
+opt-off-body = 시뮬레이션: 무엇이 바뀌는지만 보여 주고 아무것도 건드리지 않습니다.
+opt-balanced = 균형
+opt-balanced-body = 세션 동안 백그라운드 앱의 속도를 낮추고, 끝나면 되돌립니다.
+opt-max = 최대
+opt-max-body = 허용된 모든 방법: 앱 속도 낮추기, 업데이트 일시 중지, 고성능. 끝나면 모두 되돌립니다.
+power-quit-body = Windows가 평소 상태로 돌아갑니다.
+power-restart-body = PC를 다시 시작합니다.
+power-shutdown-body = PC를 끕니다.
+con-title = 연결
+con-wifi = Wi-Fi
+con-bt = Bluetooth
+con-scan = 다시 검색
+con-searching = 검색 중…
+con-connected = 연결됨
+con-connected-to = { $name }에 연결됨
+con-connect = 연결
+con-disconnected = 연결이 끊어졌습니다.
+con-password = 비밀번호
+con-none = 네트워크를 찾을 수 없습니다.
+con-ethernet = 유선 연결
+con-offline = 연결 안 됨
+con-result-success = 연결되었습니다.
+con-result-badPassword = 비밀번호가 틀렸습니다.
+con-result-timeout = 네트워크가 응답하지 않았습니다.
+con-result-failed = 연결하지 못했습니다.
+con-result-notFound = 네트워크를 찾을 수 없습니다. 다시 검색하세요.
+con-result-noAdapter = Wi-Fi 어댑터를 찾을 수 없습니다.
+bt-paired = 내 장치
+bt-search = 장치 찾기
+bt-pair = 페어링
+bt-pair-hint = 장치를 페어링 모드로 설정한 뒤 검색하세요.
+bt-forget-confirm = { $name }을(를) 삭제할까요?
+bt-forgotten = 장치를 삭제했습니다.
+bt-result-success = 장치를 페어링했습니다.
+bt-result-failed = 페어링하지 못했습니다.
+setup-step = { $current }단계
+setup-next = 다음
+setup-back = 뒤로
+setup-start = 시작하기
+setup-console-title = PC가 콘솔이 됩니다
+setup-console-body = Focus가 열려 있는 동안 Windows는 뒤로 물러납니다. 작업 표시줄도 알림도 없습니다. Focus를 종료하면 모두 원래대로 돌아갑니다.
+setup-pad-title = 컨트롤러
+setup-pad-body = 버튼 표시 방식을 고르세요. Focus는 마우스와 키보드로도 사용할 수 있습니다.
+setup-net-title = 언제나 연결
+setup-net-body = 게임 중에도 Wi-Fi와 Bluetooth를 버튼 하나로 열 수 있습니다.
+setup-lib-title = 라이브러리
+setup-lib-body = { $count ->
+   *[other] 이 PC에서 게임과 앱 { $count }개를 찾았습니다.
+}
+setup-opt-title = 세션 중 성능
+setup-opt-body = Focus는 플레이하는 동안 PC의 부담을 덜고, 끝나면 모두 되돌릴 수 있습니다. 나중에 바꿀 수도 있습니다.
+setup-comfort-title = 소리 및 편의
+setup-comfort-body = 분위기를 조정하세요. 로그인할 때 Focus가 열리면 PC가 콘솔처럼 시작됩니다.
+setup-done-title = 준비 완료
+setup-done-body = 라이브러리가 준비되었습니다. 시작하기를 눌러 들어가세요.
+setup-open-wifi = Wi-Fi 설정
+setup-open-bt = 컨트롤러 페어링
+store-installed = 설치됨
+filter-stores = 스토어
+launch-starting = 실행 중…
+store-open = 열기
+panel-screenshot = 스크린샷
+shot-saved = 스크린샷을 사진\Focus에 저장했습니다.
+detail-update = 업데이트 있음
+detail-update-open = 업데이트
+power-sleep = 절전
+power-sleep-body = 콘솔의 휴식 모드처럼 PC를 절전 상태로 둡니다.
+end-auto = 라이브러리로 돌아가는 중…
+con-ethernet-on = 유선 연결됨 (Ethernet)
+ctl-native-note = Steam 외부에서 Focus Input은 PlayStation 컨트롤러를 모든 게임이 인식하는 Xbox 컨트롤러로 바꿉니다. 입력 중복을 막으려면 HidHide(Focus 스토어의 드라이버)가 필요합니다. 플레이하는 동안 실제 컨트롤러를 게임에서 숨기고 끝나면 되돌립니다. HidHide가 없으면 「자동」은 컨트롤러를 그대로 둡니다.
+steam-guide-on = Steam에서 컨트롤러 가운데 버튼이 아직 게임 위에 Steam을 엽니다. Steam의 설정 > 컨트롤러 > 고급 설정에서 가이드 버튼으로 Steam을 앞으로 가져오는 옵션과 가이드 버튼 조합 설정을 끄세요.
+steam-guide-off = Steam이 가운데 버튼을 Focus에 맡깁니다.
+steam-guide-open = Steam 컨트롤러 설정 열기
+
+# Mode console v2 : profil visible, bureau masqué, applications ouvertes (à relire)
+profile-busy = PC 준비 중…
+profile-on = 콘솔 모드
+profile-off = 일반 모드
+unit-gb = GB
+profile-flash = PC가 콘솔 모드입니다
+profile-shell = Windows 바탕 화면을 숨겼습니다. Focus를 종료하면 돌아옵니다
+profile-freed = 게임을 위해 메모리 { $gb } GB를 비웠습니다
+profile-power = 최대 성능으로 전환했습니다
+profile-slowed = { $count ->
+   *[other] 필요 없는 프로그램 { $count }개의 속도를 낮췄습니다
+}
+profile-closed = { $count ->
+   *[other] 프로그램 { $count }개를 닫았습니다
+}
+profile-paused = { $count ->
+   *[other] Windows 백그라운드 작업 { $count }개를 일시 중지했습니다
+}
+profile-title = Focus가 해 주는 일
+profile-lead = Focus가 열려 있는 동안 PC는 콘솔처럼 동작합니다. 게임에 필요 없는 것은 모두 잠시 치워 두고, Focus를 종료하면 모두 돌아옵니다.
+profile-lead-off = 바탕 화면은 숨겼지만 PC가 아직 게임에 맞게 가벼워지지 않았습니다. 설정에서 성능을 켜세요.
+profile-none = PC가 평소 상태입니다. 설정에서 콘솔 모드를 켜면 콘솔처럼 동작합니다.
+profile-memory = 게임에 쓸 수 있는 여유 메모리
+profile-power-label = 성능
+power-plan-balanced = 균형
+power-plan-high = 최대
+power-plan-saver = 절전
+power-plan-other = 사용자 지정
+apps-title = { $count ->
+   *[other] 앱 { $count }개가 아직 열려 있습니다
+}
+apps-body = 닫으면 PC를 게임에 집중시킬 수 있습니다. 저장을 묻는 앱은 열린 채로 남으므로 잃는 것은 없습니다.
+apps-closing = 닫는 중…
+apps-close = 닫기
+apps-keep = 그대로 두기
+set-stop-shell = Windows 바탕 화면 완전히 숨기기

@@ -115,6 +115,7 @@ family-playStation = PlayStation
 family-xbox = Xbox
 family-other = Не найден
 ctl-mode = Режим: { $mode }
+mode-auto = Авто
 mode-native = Встроенный
 mode-steamInput = Steam Input
 mode-focusInput = Focus Input
@@ -169,3 +170,141 @@ hint-panel = Быстрая панель
 
 err-generic = Что-то пошло не так. Подробности в журнале.
 autostart-disabled = Лаунчер дважды не смог запуститься, поэтому открытие при входе в систему отключено.
+
+# Lumen : accueil, mode console, connexions, premier démarrage (à relire)
+top-search = Поиск
+hint-options = Параметры
+home-searching = Результаты по запросу «{ $text }»
+detail-remove-confirm = Убрать { $title } из библиотеки?
+set-section-console = Режим консоли
+set-console = Переводить Windows в режим консоли, пока открыт Focus
+set-console-body = Панель задач скрывается, уведомления замолкают. Закройте Focus, чтобы вернуть привычный Windows.
+set-hide-taskbar = Скрывать панель задач
+set-silence = Отключать уведомления
+set-start-minimized = Запускать свёрнутым при входе в систему
+set-section-opt = Производительность
+set-section-sound = Звук и экран
+set-music = Фоновая музыка
+set-vibration = Вибрация геймпада
+opt-off = Выключено
+opt-off-body = Симуляция: видно, что изменилось бы, ничего не трогается.
+opt-balanced = Сбалансировано
+opt-balanced-body = Фоновые приложения замедляются на время сеанса, затем всё восстанавливается.
+opt-max = Максимум
+opt-max-body = Все разрешённые меры: приложения замедлены, обновления на паузе, высокая производительность. Затем всё восстанавливается.
+power-quit-body = Windows возвращается в обычный режим.
+power-restart-body = Перезагружает компьютер.
+power-shutdown-body = Выключает компьютер.
+con-title = Подключения
+con-wifi = Wi-Fi
+con-bt = Bluetooth
+con-scan = Искать снова
+con-searching = Поиск…
+con-connected = Подключено
+con-connected-to = Подключено к { $name }
+con-connect = Подключиться
+con-disconnected = Отключено.
+con-password = Пароль
+con-none = Сети не найдены.
+con-ethernet = Проводное подключение
+con-offline = Нет подключения
+con-result-success = Подключено.
+con-result-badPassword = Неверный пароль.
+con-result-timeout = Сеть не ответила.
+con-result-failed = Не удалось подключиться.
+con-result-notFound = Сеть не найдена. Повторите поиск.
+con-result-noAdapter = Адаптер Wi-Fi не найден.
+bt-paired = Ваши устройства
+bt-search = Найти устройства
+bt-pair = Связать
+bt-pair-hint = Переведите устройство в режим сопряжения и запустите поиск.
+bt-forget-confirm = Забыть { $name }?
+bt-forgotten = Устройство забыто.
+bt-result-success = Устройство связано.
+bt-result-failed = Не удалось связать устройство.
+setup-step = Шаг { $current }
+setup-next = Далее
+setup-back = Назад
+setup-start = Начать
+setup-console-title = Ваш ПК становится консолью
+setup-console-body = Пока Focus открыт, Windows уходит в тень: ни панели задач, ни уведомлений. Закройте Focus, и всё вернётся как было.
+setup-pad-title = Ваш геймпад
+setup-pad-body = Выберите, как показывать кнопки. Focus работает и с мышью, и с клавиатурой.
+setup-net-title = Оставайтесь на связи
+setup-net-body = Wi-Fi и Bluetooth всегда в одном нажатии, даже во время игры.
+setup-lib-title = Ваша библиотека
+setup-lib-body = { $count ->
+    [one] Найдена { $count } игра или программа на этом ПК.
+    [few] Найдено { $count } игры и программы на этом ПК.
+    [many] Найдено { $count } игр и программ на этом ПК.
+   *[other] Найдено игр и программ на этом ПК: { $count }.
+}
+setup-opt-title = Производительность во время сеансов
+setup-opt-body = Focus может разгрузить ПК, пока вы играете, а затем всё вернуть. Выбор за вами, его можно изменить позже.
+setup-comfort-title = Звук и удобство
+setup-comfort-body = Настройте атмосферу. Если Focus открывается при входе в систему, ПК запускается как консоль.
+setup-done-title = Всё готово
+setup-done-body = Библиотека ждёт. Нажмите «Начать», чтобы войти.
+setup-open-wifi = Настроить Wi-Fi
+setup-open-bt = Подключить геймпад
+store-installed = Установлено
+filter-stores = Магазины
+launch-starting = Запуск…
+store-open = Открыть
+panel-screenshot = Снимок экрана
+shot-saved = Снимок сохранён в «Изображения\Focus».
+detail-update = Доступно обновление
+detail-update-open = Обновить
+power-sleep = Спящий режим
+power-sleep-body = ПК переходит в сон, как консоль в режиме покоя.
+end-auto = Возврат в библиотеку…
+con-ethernet-on = Подключено по кабелю (Ethernet)
+ctl-native-note = Вне Steam Focus Input заменяет геймпад PlayStation геймпадом Xbox, который понимают все игры. Чтобы не было двойных нажатий, нужен HidHide (в магазине Focus, раздел драйверов): Focus скрывает настоящий геймпад от игры на время партии и потом возвращает. Без HidHide режим «Авто» оставляет геймпад как есть.
+steam-guide-on = В Steam центральная кнопка геймпада всё ещё выводит Steam поверх игр. В Steam: Настройки, Контроллер, Расширенные настройки — отключите вывод Steam на передний план кнопкой Guide и настройку сочетаний кнопки Guide.
+steam-guide-off = Steam оставляет центральную кнопку для Focus.
+steam-guide-open = Открыть настройки контроллера Steam
+
+# Mode console v2 : profil visible, bureau masqué, applications ouvertes (à relire)
+profile-busy = Подготовка ПК…
+profile-on = Режим консоли
+profile-off = Обычный режим
+unit-gb = ГБ
+profile-flash = Ваш ПК в режиме консоли
+profile-shell = Рабочий стол Windows скрыт: он вернётся, когда вы закроете Focus
+profile-freed = { $gb } ГБ памяти освобождено для игр
+profile-power = Включена максимальная мощность
+profile-slowed = { $count ->
+    [one] Замедлена { $count } ненужная программа
+    [few] Замедлены { $count } ненужные программы
+   *[other] Замедлено { $count } ненужных программ
+}
+profile-closed = { $count ->
+    [one] Закрыта { $count } программа
+    [few] Закрыты { $count } программы
+   *[other] Закрыто { $count } программ
+}
+profile-paused = { $count ->
+    [one] Приостановлена { $count } фоновая задача Windows
+    [few] Приостановлены { $count } фоновые задачи Windows
+   *[other] Приостановлено { $count } фоновых задач Windows
+}
+profile-title = Что Focus делает для вас
+profile-lead = Пока Focus открыт, ваш ПК ведёт себя как консоль: всё, что не нужно игре, отложено в сторону. Всё вернётся, когда вы закроете Focus.
+profile-lead-off = Рабочий стол скрыт, но ПК ещё не разгружен для игр. Включите производительность в настройках.
+profile-none = Ваш ПК в обычном состоянии. Включите режим консоли в настройках, чтобы он вёл себя как консоль.
+profile-memory = Свободная память для игр
+profile-power-label = Мощность
+power-plan-balanced = Сбалансированная
+power-plan-high = Максимальная
+power-plan-saver = Экономия энергии
+power-plan-other = Своя
+apps-title = { $count ->
+    [one] Ещё открыто { $count } приложение
+    [few] Ещё открыты { $count } приложения
+   *[other] Ещё открыто { $count } приложений
+}
+apps-body = Закрыв их, вы освободите ПК для игры. Если какое-то попросит сохранить данные, оно останется открытым: ничего не потеряется.
+apps-closing = Закрываем…
+apps-close = Закрыть
+apps-keep = Оставить
+set-stop-shell = Полностью скрывать рабочий стол Windows

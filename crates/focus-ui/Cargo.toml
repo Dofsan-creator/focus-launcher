@@ -19,10 +19,11 @@ unic-langid = "0.9"
 [dependencies.web-sys]
 version = "0.3"
 features = [
-    "AudioContext", "AudioDestinationNode", "AudioNode", "AudioParam", "BaseAudioContext",
+    "AudioBuffer", "AudioContext", "AudioDestinationNode", "AudioNode", "AudioParam", "BaseAudioContext",
+    "BiquadFilterNode", "BiquadFilterType", "ConvolverNode", "OscillatorType",
     "Document", "DomRect", "Element", "HtmlElement", "KeyboardEvent", "MouseEvent",
     "Navigator", "NodeList", "OscillatorNode", "GainNode", "ScrollIntoViewOptions",
-    "ScrollLogicalPosition", "Window", "CssStyleDeclaration", "DomTokenList",
+    "ScrollLogicalPosition", "Window", "CssStyleDeclaration", "DomTokenList", "console",
 ]
 
 [lints]

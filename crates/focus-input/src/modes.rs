@@ -31,10 +31,15 @@ pub struct Environment {
 
 /// Choisit le mode. Le choix de l'utilisateur prime toujours, sauf s'il est
 /// impossible : on retombe alors sur Natif, sans erreur.
+///
+/// Sans HidHide, la manette virtuelle s'ajoute à la vraie au lieu de la remplacer :
+/// le jeu voit deux manettes et les commandes se doublent. Focus Input n'est donc
+/// jamais choisi tout seul sans HidHide ; la manette reste en natif (USB ou
+/// Bluetooth, Windows et la plupart des jeux la reconnaissent).
 pub fn resolve_mode(family: Family, env: Environment, user_choice: Option<Mode>) -> Mode {
     let candidate = user_choice.unwrap_or(match family {
         Family::PlayStation if env.steam_running => Mode::SteamInput,
-        Family::PlayStation if env.vigem_present => Mode::FocusInput,
+        Family::PlayStation if env.vigem_present && env.hidhide_present => Mode::FocusInput,
         _ => Mode::Native,
     });
     match candidate {
@@ -134,6 +139,16 @@ mod tests {
             resolve_mode(Family::PlayStation, env, None),
             Mode::FocusInput
         );
+    }
+
+    #[test]
+    fn ds4_without_hidhide_should_stay_native_to_avoid_double_pads() {
+        let env = Environment {
+            steam_running: false,
+            vigem_present: true,
+            hidhide_present: false,
+        };
+        assert_eq!(resolve_mode(Family::PlayStation, env, None), Mode::Native);
     }
 
     #[test]

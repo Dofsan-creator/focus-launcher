@@ -45,23 +45,53 @@ pub fn create_shortcut(link: &Path, target: &Path, args: &str) -> Result<(), win
     }
 }
 
-/// Le lancement à l'ouverture de session est-il actif ? Lit l'état réel du système.
-pub fn autostart_enabled() -> bool {
-    known_folder(&FOLDERID_Startup).is_ok_and(|dir| dir.join(STARTUP_LINK).is_file())
+/// Tâche planifiée qui ouvre Focus à l'ouverture de session.
+const STARTUP_TASK: &str = "Focus Launcher";
+
+fn schtasks(args: &[&str]) -> std::io::Result<bool> {
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+    let status = std::process::Command::new("schtasks.exe")
+        .args(args)
+        .creation_flags(CREATE_NO_WINDOW)
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .status()?;
+    Ok(status.success())
 }
 
-/// Active ou retire le lancement à l'ouverture de session, sans droits administrateur.
+/// Focus s'ouvre-t-il à l'ouverture de session ?
+pub fn autostart_enabled() -> bool {
+    schtasks(&["/Query", "/TN", STARTUP_TASK]).unwrap_or(false)
+}
+
+/// Active ou retire l'ouverture à l'ouverture de session. Focus exige les droits
+/// administrateur : Windows ne lance pas un tel programme depuis le dossier
+/// Démarrage, d'où une tâche planifiée « privilèges les plus élevés », limitée à
+/// l'utilisateur courant et à sa session interactive, sans invite.
 pub fn set_autostart(enabled: bool, exe: &Path) -> Result<(), windows::core::Error> {
-    let link = known_folder(&FOLDERID_Startup)?.join(STARTUP_LINK);
-    if enabled {
-        create_shortcut(&link, exe, "--autostart")
-    } else {
-        match std::fs::remove_file(link) {
-            Ok(()) => Ok(()),
-            Err(err) if err.kind() == std::io::ErrorKind::NotFound => Ok(()),
-            Err(err) => Err(err.into()),
-        }
+    // L'ancien raccourci du dossier Démarrage disparaît dans les deux cas.
+    if let Ok(dir) = known_folder(&FOLDERID_Startup) {
+        let _ = std::fs::remove_file(dir.join(STARTUP_LINK));
     }
+    if enabled {
+        let command = format!("\"{}\" --autostart", exe.display());
+        let user = match (std::env::var("USERDOMAIN"), std::env::var("USERNAME")) {
+            (Ok(domain), Ok(name)) => format!("{domain}\\{name}"),
+            (_, Ok(name)) => name,
+            _ => String::new(),
+        };
+        let mut args = vec!["/Create", "/F", "/TN", STARTUP_TASK, "/TR", command.as_str(), "/SC", "ONLOGON", "/RL", "HIGHEST"];
+        if !user.is_empty() {
+            args.extend(["/RU", user.as_str(), "/IT"]);
+        }
+        if !schtasks(&args)? {
+            return Err(std::io::Error::other("schtasks /Create failed").into());
+        }
+    } else if autostart_enabled() && !schtasks(&["/Delete", "/F", "/TN", STARTUP_TASK])? {
+        return Err(std::io::Error::other("schtasks /Delete failed").into());
+    }
+    Ok(())
 }
 
 /// Crée un raccourci d'entrée dans « Focus Launcher » du Menu Démarrer.
