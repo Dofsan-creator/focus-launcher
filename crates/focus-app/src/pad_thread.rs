@@ -11,6 +11,7 @@ pub fn spawn(app: AppHandle, state: Arc<App>) {
     use focus_input::focus_input::to_xreport;
     use focus_input::modes::{resolve_mode, Environment, Mode};
     use focus_input::pad::{Family, PadState};
+    use focus_input::pointer::PointerMapper;
     use focus_input::source::{read_xinput, rumble, vigem_present, HidPad, VirtualPad};
     use std::sync::atomic::Ordering;
     use std::time::{Duration, Instant};
@@ -25,6 +26,9 @@ pub fn spawn(app: AppHandle, state: Arc<App>) {
 
     std::thread::spawn(move || {
         let mut mapper = ActionMapper::default();
+        let mut pointer = PointerMapper::default();
+        let mut was_pointing = false;
+        let mut last_tick = Instant::now();
         let mut hid: Option<HidPad> = None;
         let mut virtual_pad: Option<VirtualPad> = None;
         let mut engine_failed = false;
@@ -114,7 +118,37 @@ pub fn spawn(app: AppHandle, state: Arc<App>) {
                 let _ = app.emit("pad-family", family);
             }
             let now = started.elapsed().as_millis() as u64;
-            for action in mapper.update(&active, now) {
+            let actions = mapper.update(&active, now);
+            // Souris à la manette : le stick déplace le curseur, le bouton du bas clique,
+            // celui de droite fait le clic droit, celui du haut ouvre le clavier.
+            let pointing = state.pointer.load(Ordering::SeqCst);
+            if pointing {
+                let out = pointer.update(&active, last_tick.elapsed().as_secs_f32());
+                focus_sys::pointer::send(out.dx, out.dy, out.left, out.right, out.wheel);
+                if out.keyboard {
+                    focus_sys::pointer::toggle_keyboard();
+                }
+            } else if was_pointing {
+                // Éteinte ailleurs (le jeu est apparu) : aucun clic ne reste enfoncé.
+                let out = pointer.release();
+                focus_sys::pointer::send(0, 0, out.left, out.right, 0);
+            }
+            was_pointing = pointing;
+            last_tick = Instant::now();
+            for action in actions {
+                // En mode souris, seul le bouton central compte : il rend la manette à
+                // Focus et ramène son menu.
+                if pointing {
+                    if matches!(action, Action::Home) {
+                        state.pointer.store(false, Ordering::SeqCst);
+                        let out = pointer.release();
+                        focus_sys::pointer::send(0, 0, out.left, out.right, 0);
+                        was_pointing = false;
+                        crate::commands::back_to_launcher(&app);
+                        let _ = app.emit("pad-action", action);
+                    }
+                    continue;
+                }
                 // En jeu, Focus ne réagit qu’au bouton central, sauf quand son menu est
                 // affiché : alors Retour, les flèches et Valider lui reviennent aussi.
                 if in_session && !crate::commands::launcher_visible(&app) {
@@ -143,6 +177,8 @@ pub fn spawn(app: AppHandle, state: Arc<App>) {
             }
             std::thread::sleep(if virtual_pad.is_some() {
                 ENGINE_POLL
+            } else if was_pointing {
+                MENU_POLL
             } else if in_session {
                 GAME_POLL
             } else {

@@ -337,3 +337,7 @@ guide-step-3 = Desative "Ativar combinações do botão Guia para controles" e v
 guide-check = Pronto, verificar
 guide-later = Mais tarde
 guide-show = Ver como resolver
+
+# Souris à la manette (à relire)
+pointer-tile = Controle como mouse
+pointer-hint = Analógico esquerdo: mover · baixo: clicar · direita: clique direito · cima: teclado · botão central: terminar

@@ -249,6 +249,19 @@ Vérifié sans plantage ni erreur de console : assistant complet, accueil, rang�
 | Déclencheur | — | Le DNS de la box de l'utilisateur ne résout pas `msedge.sf.dl.delivery.mp.microsoft.com`, que Tauri interroge pour embarquer WebView2 : l'installeur ne pouvait plus être construit sur ce PC |
 | Ce qu'on perd | — | Un Windows 11 sans WebView2 (supprimé à la main) et sans Internet ne pourra pas installer Focus. Cas jugé marginal |
 
+## 28. Souris à la manette (2026-11-12)
+
+| Point | Options | Choix |
+| --- | --- | --- |
+| Besoin | — | Les lanceurs de jeux, les fenêtres de connexion et les boutiques attendent souvent un clic : sans bureau ni souris, un joueur à la manette restait bloqué |
+| Déclenchement | Combinaison de boutons cachée ; tuile du panneau rapide ; automatique | **Tuile du panneau rapide**, et **automatique** pendant l'écran de lancement quand Focus fait passer devant une fenêtre de lanceur. Éteinte dès que le jeu occupe l'écran : la manette n'agit jamais sur le curseur en pleine partie |
+| Commandes | — | Stick gauche : curseur (zone morte, courbe au carré pour la précision) ; bouton du bas : clic ; droite : clic droit ; haut : clavier à l'écran de Windows ; stick droit : défilement ; bouton central : retour à Focus. Les noms sont donnés par position, pas par lettre ni par forme, pour toutes les manettes |
+| Envoi | Pilote de souris virtuelle ; `SendInput` | **`SendInput`** : rien à installer ; Focus étant administrateur, il atteint aussi les lanceurs qui le sont |
+| Clavier | Clavier de Focus ; clavier de Windows | **Clavier de Windows** (`osk.exe`, ouvert par le shell) : il écrit dans n'importe quelle fenêtre |
+| Sécurité | — | Un clic tenu est toujours relâché quand le mode s'éteint |
+
+Logique pure dans `focus-input::pointer` (7 tests), envoi dans `focus-sys::pointer`. Non essayé avec une vraie manette.
+
 ## Propositions de changement (à trancher par l'utilisateur)
 
 1. Livrer d'abord les 11 langues actuelles, puis les autres par la communauté (v4.4 demande toutes les langues de Windows avant la sortie).

@@ -329,3 +329,7 @@ guide-step-3 = 关闭“为控制器启用导航键组合键配置”，然后�
 guide-check = 已完成，检查
 guide-later = 稍后
 guide-show = 查看解决方法
+
+# Souris à la manette (à relire)
+pointer-tile = 手柄当鼠标
+pointer-hint = 左摇杆：移动 · 下键：点击 · 右键：右击 · 上键：键盘 · 中间按键：结束

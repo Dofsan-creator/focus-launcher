@@ -49,6 +49,12 @@ fn command_line(args: &[String]) -> String {
         .join(" ")
 }
 
+/// Ouvre un outil de Windows (clavier à l'écran) par le shell, qui seul sait lancer
+/// les programmes à accès spécial à l'interface.
+pub fn open_system_tool(path: &str) -> Result<(), LaunchError> {
+    shell_open(path)
+}
+
 /// Ouvre une adresse par l'association de Windows.
 fn shell_open(target: &str) -> Result<(), LaunchError> {
     let (open, target) = (wide("open"), wide(target));

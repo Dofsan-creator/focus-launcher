@@ -339,3 +339,7 @@ guide-step-3 = Turn off "Enable Guide button chords for controller", then come b
 guide-check = Done, check
 guide-later = Later
 guide-show = See how to fix this
+
+# Souris à la manette (à relire)
+pointer-tile = Controller as mouse
+pointer-hint = Left stick: move · bottom: click · right: right-click · top: keyboard · center button: done

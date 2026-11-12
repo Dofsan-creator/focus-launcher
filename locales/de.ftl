@@ -337,3 +337,7 @@ guide-step-3 = Schalte „Guide-Tasten-Kombinationen für Controller aktivieren�
 guide-check = Erledigt, prüfen
 guide-later = Später
 guide-show = So lässt es sich beheben
+
+# Souris à la manette (à relire)
+pointer-tile = Controller als Maus
+pointer-hint = Linker Stick: bewegen · unten: klicken · rechts: Rechtsklick · oben: Tastatur · mittlere Taste: fertig

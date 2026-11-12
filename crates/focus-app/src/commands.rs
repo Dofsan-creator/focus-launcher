@@ -151,6 +151,8 @@ pub fn play(app: AppHandle, state: Shared<'_>, id: String) -> CmdResult<()> {
     std::thread::spawn(move || {
         #[cfg(windows)]
         wait_for_start(&shared);
+        // Le jeu est là (ou n'est jamais venu) : la souris rend la main à la manette.
+        shared.pointer.store(false, std::sync::atomic::Ordering::SeqCst);
         // Le jeu s'est fermé avant d'apparaître (plantage) : l'écran de fin reste.
         if shared.running().is_none() {
             return;
@@ -232,10 +234,13 @@ fn wait_for_start(state: &App) {
             }
         }
         // Lanceur ou anticheat ouvert derrière Focus : on le montre, une seule fois.
+        // Un lanceur attend souvent un clic (« Jouer ») : la manette devient souris
+        // jusqu'à ce que le jeu occupe l'écran.
         for window in &windows {
             if !raised.contains(&window.hwnd) {
                 raised.push(window.hwnd);
                 focus_sys::console::bring_to_front(window.hwnd);
+                state.pointer.store(true, std::sync::atomic::Ordering::SeqCst);
             }
         }
         std::thread::sleep(Duration::from_millis(250));
@@ -1054,6 +1059,17 @@ pub fn apply_console_settings(app: &AppHandle, state: &App, console: &Console) {
         console.leave();
         state.restore_console_plan();
         let _ = app.emit("console-report", None::<crate::runtime::ConsoleReport>);
+    }
+}
+
+/// Allume ou éteint la souris à la manette. Allumée, Focus s'efface pour laisser
+/// cliquer dans la fenêtre qui est derrière (lanceur, boutique, connexion).
+#[tauri::command]
+pub fn pointer_mode(app: AppHandle, state: Shared<'_>, on: bool) {
+    state.pointer.store(on, std::sync::atomic::Ordering::SeqCst);
+    tracing::info!("pointer mode {}", if on { "on" } else { "off" });
+    if on {
+        hide_launcher(&app);
     }
 }
 

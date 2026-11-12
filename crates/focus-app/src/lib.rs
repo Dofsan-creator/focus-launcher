@@ -170,6 +170,7 @@ pub fn run(launch: Launch) {
             commands::bt_unpair,
             commands::apply_console,
             commands::console_report,
+            commands::pointer_mode,
             commands::close_open_apps,
             commands::downloads,
             commands::app_version,

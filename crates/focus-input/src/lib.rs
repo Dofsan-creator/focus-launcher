@@ -10,5 +10,6 @@ pub mod ds4;
 pub mod focus_input;
 pub mod modes;
 pub mod pad;
+pub mod pointer;
 #[cfg(windows)]
 pub mod source;

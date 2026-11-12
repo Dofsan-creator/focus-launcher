@@ -329,3 +329,7 @@ guide-step-3 = "컨트롤러용 가이드 버튼 조합 설정 사용"을 끄고
 guide-check = 완료, 확인하기
 guide-later = 나중에
 guide-show = 해결 방법 보기
+
+# Souris à la manette (à relire)
+pointer-tile = 컨트롤러를 마우스로
+pointer-hint = 왼쪽 스틱: 이동 · 아래: 클릭 · 오른쪽: 오른쪽 클릭 · 위: 키보드 · 가운데 버튼: 끝내기

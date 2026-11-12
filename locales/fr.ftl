@@ -337,3 +337,7 @@ guide-step-3 = Désactive « Activer la configuration du bouton guide pour les c
 guide-check = C'est fait, vérifier
 guide-later = Plus tard
 guide-show = Voir comment régler ça
+
+# Souris à la manette (à relire)
+pointer-tile = Souris à la manette
+pointer-hint = Stick gauche : bouger · bas : cliquer · droite : clic droit · haut : clavier · bouton central : terminer

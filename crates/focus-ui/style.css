@@ -430,6 +430,11 @@ img { user-select: none; }
 @keyframes fx-name { from { opacity: 0; transform: scale(1.18); } }
 .fx-line { position: relative; width: min(560px, 62vw); height: 3px; border-radius: 2px; background: var(--fx); transform-origin: center; animation: boot-line 900ms var(--ease) 560ms both; }
 
+/* Tuile de la souris à la manette : son aide tient sous le titre. */
+.qtile-hint { color: var(--muted); font-size: 0.78em; font-weight: 500; line-height: 1.3; }
+.panel.sheet.side .pointer-tile { flex-wrap: wrap; }
+.panel.sheet.side .pointer-tile .qtile-hint { flex-basis: 100%; padding-inline-start: 2.6em; }
+
 /* Tutoriel du bouton central */
 .dialog .card.wide { width: min(820px, 94vw); }
 .guide-steps { margin: 0; padding-inline-start: 1.4em; display: flex; flex-direction: column; gap: 0.6em; font-size: 1.05em; }

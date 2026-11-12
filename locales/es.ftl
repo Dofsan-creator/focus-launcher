@@ -337,3 +337,7 @@ guide-step-3 = Desactiva «Activar la configuración de combinaciones del botón
 guide-check = Hecho, comprobar
 guide-later = Más tarde
 guide-show = Ver cómo arreglarlo
+
+# Souris à la manette (à relire)
+pointer-tile = Mando como ratón
+pointer-hint = Stick izquierdo: mover · abajo: clic · derecha: clic derecho · arriba: teclado · botón central: terminar

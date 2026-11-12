@@ -196,6 +196,8 @@ pub struct App {
     running: Mutex<Option<Running>>,
     /// Actif pendant une session : le rendu et la manette passent en retrait.
     pub in_session: AtomicBool,
+    /// Souris à la manette : le stick déplace le curseur, les boutons cliquent.
+    pub pointer: AtomicBool,
     data_dir: PathBuf,
     journal: JournalStore,
     /// Plan appliqué pour toute la durée du mode console (tout ce qui est inutile au jeu).
@@ -231,6 +233,7 @@ impl App {
             settings: Mutex::new(settings),
             running: Mutex::new(None),
             in_session: AtomicBool::new(false),
+            pointer: AtomicBool::new(false),
             data_dir: data_dir.to_path_buf(),
             journal: JournalStore::new(data_dir.join("session.lock.json")),
             #[cfg(windows)]

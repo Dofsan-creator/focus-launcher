@@ -1715,6 +1715,15 @@ pub fn QuickPanel() -> impl IntoView {
                 {tile("wifi", "con-wifi", Callback::new(move |_| { ctx.con_tab.set("wifi"); go(Screen::Connections); }))}
                 {tile("bluetooth", "con-bt", Callback::new(move |_| { ctx.con_tab.set("bluetooth"); go(Screen::Connections); }))}
                 {tile("settings", "set-title", Callback::new(move |_| go(Screen::Settings)))}
+                <button class="f qtile pointer-tile" on:click=move |_| {
+                    ctx.panel.set(false);
+                    spawn_local(async move {
+                        let _ = invoke::<Value>("pointer_mode", json!({ "on": true })).await;
+                    });
+                }>
+                    <Icon name="pointer"/><span>{move || i18n.t("pointer-tile")}</span>
+                    <small class="qtile-hint">{move || i18n.t("pointer-hint")}</small>
+                </button>
                 {tile("download", "dl-title", Callback::new(move |_| go(Screen::Downloads)))}
                 {tile("power", "power-title", Callback::new(move |_| go(Screen::Power)))}
             </div>

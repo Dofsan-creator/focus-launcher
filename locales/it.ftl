@@ -337,3 +337,7 @@ guide-step-3 = Disattiva «Abilita le combinazioni del pulsante Guida per i cont
 guide-check = Fatto, verifica
 guide-later = Più tardi
 guide-show = Vedi come risolvere
+
+# Souris à la manette (à relire)
+pointer-tile = Controller come mouse
+pointer-hint = Levetta sinistra: muovi · basso: clic · destra: clic destro · alto: tastiera · pulsante centrale: fine

@@ -329,3 +329,7 @@ guide-step-3 = 「コントローラーのガイドボタンコード設定を�
 guide-check = 完了、確認する
 guide-later = あとで
 guide-show = 直し方を見る
+
+# Souris à la manette (à relire)
+pointer-tile = コントローラーをマウスに
+pointer-hint = 左スティック：移動 · 下：クリック · 右：右クリック · 上：キーボード · 中央ボタン：終了

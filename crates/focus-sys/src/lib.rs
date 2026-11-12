@@ -13,6 +13,7 @@ pub mod http;
 pub mod icon;
 pub mod launch;
 pub mod ops;
+pub mod pointer;
 pub mod report;
 pub mod scan;
 pub mod shell;
