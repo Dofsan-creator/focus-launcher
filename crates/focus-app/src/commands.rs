@@ -210,7 +210,8 @@ fn wait_for_start(state: &App) {
                 || crate::runtime::is_launcher(&name)
                 || name == "explorer"
                 || STORE_PROCESSES.contains(&name.as_str())
-                || name.contains("webhelper");
+                || name.contains("webhelper")
+                || running.before.contains(&name);
             if !ignored && front.coverage >= GAME_COVERAGE && started.elapsed() > Duration::from_secs(2) {
                 state.set_main(name);
                 std::thread::sleep(Duration::from_millis(300));

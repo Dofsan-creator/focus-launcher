@@ -347,3 +347,13 @@ rep-body = صِف ما حدث. بعدها يفتح متصفحك نموذجًا �
 rep-describe = وصف المشكلة
 rep-send = فتح النموذج
 rep-opened = النموذج مفتوح في متصفحك.
+
+# Effet de profil et tutoriel du bouton central (à relire)
+fx-profile = ملف الأداء
+guide-title = الزر الأوسط في يد التحكم ما زال يفتح Steam
+guide-step-1 = افتح إعدادات Steam بالزر أدناه ثم اختر «يد التحكم».
+guide-step-2 = عطّل خيار «زر الدليل ينقل التركيز إلى Steam».
+guide-step-3 = عطّل خيار «تفعيل اختصارات زر الدليل ليد التحكم» ثم عُد إلى هنا.
+guide-check = تم، تحقّق
+guide-later = لاحقًا
+guide-show = عرض طريقة الحل

@@ -327,3 +327,13 @@ rep-body = Descreva o que aconteceu. Depois, seu navegador abre um formulário j
 rep-describe = Descrever o problema
 rep-send = Abrir o formulário
 rep-opened = O formulário está aberto no navegador.
+
+# Effet de profil et tutoriel du bouton central (à relire)
+fx-profile = Perfil de desempenho
+guide-title = O botão central do seu controle ainda abre a Steam
+guide-step-1 = Abra as configurações da Steam com o botão abaixo e escolha "Controle".
+guide-step-2 = Desative "O botão Guia traz a Steam para a frente".
+guide-step-3 = Desative "Ativar combinações do botão Guia para controles" e volte para cá.
+guide-check = Pronto, verificar
+guide-later = Mais tarde
+guide-show = Ver como resolver

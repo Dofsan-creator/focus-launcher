@@ -82,6 +82,10 @@ pub struct Running {
     /// Un anticheat est installé avec le jeu : aucun arrêt forcé du jeu (SPEC D7).
     #[serde(skip)]
     pub anticheat: bool,
+    /// Programmes qui tournaient déjà au lancement : leur fenêtre n'est jamais prise
+    /// pour celle du jeu (un terminal ou un navigateur resté ouvert).
+    #[serde(skip)]
+    pub before: Vec<String>,
 }
 
 /// Fin de session, envoyée à l'interface.
@@ -354,9 +358,18 @@ impl App {
             // attend la fin au lieu d'appliquer un second plan par-dessus.
             let mut slot = lock(&self.console_plan);
             if slot.is_some() {
-                if let Some(known) = lock(&self.report).as_mut() {
+                let mut report = lock(&self.report);
+                if let Some(known) = report.as_mut().filter(|known| known.level == level) {
                     known.shell_stopped = shell_stopped;
                     return known.clone();
+                }
+                drop(report);
+                // Le niveau a changé : on rend ce que l'ancien profil avait coupé, puis
+                // le nouveau s'applique. C'est ce qui rend le changement réel, tout de suite.
+                if let Some(mut ops) = slot.take() {
+                    if let Err(err) = focus_core::session::restore(&mut ops, &self.journal) {
+                        tracing::error!("previous profile not restored: {err}");
+                    }
                 }
             }
             let (total, before) = focus_sys::console::memory();
@@ -587,6 +600,7 @@ impl App {
                 pid: None,
                 main: None,
                 anticheat: entry.install_dir.as_deref().is_some_and(anticheat_in),
+                before: running_names(),
             });
         }
         let result = self.start_session(&entry);

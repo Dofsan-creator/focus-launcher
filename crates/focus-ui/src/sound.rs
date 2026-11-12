@@ -19,6 +19,8 @@ pub enum Tone {
     Confirm,
     /// Retour.
     Back,
+    /// Changement de profil de performance : trois notes qui montent.
+    Profile,
 }
 
 /// Accords tenus, du grave à l'aigu : ré, sol, si mineur, la suspendu. Chaque note
@@ -67,26 +69,31 @@ fn with_context<T>(work: impl FnOnce(&AudioContext) -> Option<T>) -> Option<T> {
 /// Joue un son très court, dans la même gamme que la musique. Une absence d'audio
 /// n'est pas une erreur.
 pub fn play(tone: Tone) {
-    let (frequency, length, level) = match tone {
-        Tone::Move => (587.33, 0.07, 0.022),
-        Tone::Confirm => (880.0, 0.14, 0.034),
-        Tone::Back => (440.0, 0.11, 0.026),
+    // Notes : fréquence, départ, durée, niveau.
+    let notes: &[(f32, f64, f64, f32)] = match tone {
+        Tone::Move => &[(587.33, 0.0, 0.07, 0.022)],
+        Tone::Confirm => &[(880.0, 0.0, 0.14, 0.034)],
+        Tone::Back => &[(440.0, 0.0, 0.11, 0.026)],
+        Tone::Profile => &[(293.66, 0.0, 0.5, 0.05), (440.0, 0.14, 0.5, 0.05), (587.33, 0.28, 0.9, 0.06)],
     };
     let _ = with_context(|context| {
-        let oscillator = context.create_oscillator().ok()?;
-        let gain = context.create_gain().ok()?;
-        oscillator.frequency().set_value(frequency);
         let now = context.current_time();
-        // Montée de quelques millisecondes : pas de claquement à l'attaque.
-        gain.gain().set_value_at_time(0.0001, now).ok()?;
-        gain.gain().linear_ramp_to_value_at_time(level, now + 0.008).ok()?;
-        gain.gain()
-            .exponential_ramp_to_value_at_time(0.0001, now + length)
-            .ok()?;
-        oscillator.connect_with_audio_node(&gain).ok()?;
-        gain.connect_with_audio_node(&context.destination()).ok()?;
-        oscillator.start().ok()?;
-        oscillator.stop_with_when(now + length + 0.02).ok()?;
+        for (frequency, offset, length, level) in notes {
+            let start = now + offset;
+            let oscillator = context.create_oscillator().ok()?;
+            let gain = context.create_gain().ok()?;
+            oscillator.frequency().set_value(*frequency);
+            // Montée de quelques millisecondes : pas de claquement à l'attaque.
+            gain.gain().set_value_at_time(0.0001, start).ok()?;
+            gain.gain().linear_ramp_to_value_at_time(*level, start + 0.008).ok()?;
+            gain.gain()
+                .exponential_ramp_to_value_at_time(0.0001, start + length)
+                .ok()?;
+            oscillator.connect_with_audio_node(&gain).ok()?;
+            gain.connect_with_audio_node(&context.destination()).ok()?;
+            oscillator.start_with_when(start).ok()?;
+            oscillator.stop_with_when(start + length + 0.02).ok()?;
+        }
         Some(())
     });
 }

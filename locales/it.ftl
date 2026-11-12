@@ -327,3 +327,13 @@ rep-body = Descrivi cosa è successo. Poi il browser si apre su una scheda già 
 rep-describe = Descrivi il problema
 rep-send = Apri la scheda
 rep-opened = La scheda è aperta nel browser.
+
+# Effet de profil et tutoriel du bouton central (à relire)
+fx-profile = Profilo prestazioni
+guide-title = Il pulsante centrale del controller apre ancora Steam
+guide-step-1 = Apri le impostazioni di Steam con il pulsante qui sotto, poi scegli «Controller».
+guide-step-2 = Disattiva «Il pulsante Guida porta Steam in primo piano».
+guide-step-3 = Disattiva «Abilita le combinazioni del pulsante Guida per i controller», poi torna qui.
+guide-check = Fatto, verifica
+guide-later = Più tardi
+guide-show = Vedi come risolvere

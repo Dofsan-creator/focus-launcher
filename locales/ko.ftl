@@ -319,3 +319,13 @@ rep-body = 무슨 일이 있었는지 적어 주세요. 그러면 브라우저�
 rep-describe = 문제 설명하기
 rep-send = 양식 열기
 rep-opened = 브라우저에서 양식을 열었습니다.
+
+# Effet de profil et tutoriel du bouton central (à relire)
+fx-profile = 성능 프로필
+guide-title = 컨트롤러의 가운데 버튼이 아직 Steam을 엽니다
+guide-step-1 = 아래 버튼으로 Steam 설정을 열고 "컨트롤러"를 선택하세요.
+guide-step-2 = "가이드 버튼으로 Steam에 포커스"를 끄세요.
+guide-step-3 = "컨트롤러용 가이드 버튼 조합 설정 사용"을 끄고 여기로 돌아오세요.
+guide-check = 완료, 확인하기
+guide-later = 나중에
+guide-show = 해결 방법 보기

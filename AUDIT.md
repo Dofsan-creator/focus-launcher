@@ -58,6 +58,9 @@ Une ligne par constat (v4, section 5). Gravité : critique, haute, moyenne, bass
 
 | 48 | 2026-11-12 | haute, à essayer | Mise à jour, signalement et écran Téléchargements (décision 24) écrits et testés hors machine réelle | 🧑 Publier une première version signée, puis une seconde, et vérifier que Focus la propose et l'installe ; vérifier que la fiche GitHub s'ouvre, bureau arrêté |
 
+| 49 | 2026-11-12 | critique, ouvert | Le PC a redémarré sans s'éteindre proprement quatre fois le 2026-11-12 (06:30, 07:13, 08:02, 10:36, événement Kernel-Power 41), sans vidage mémoire. Focus ne tournait que la première fois, au lancement d'un jeu à anticheat avec la manette masquée par HidHide. Les arrêts « inexpliqués de Focus » du 2026-11-10 (n° 46) sont sans doute les mêmes | Cause non trouvée : matériel, alimentation, pilote ou conflit HidHide et anticheat. 🧑 Dire si ces redémarrages sont volontaires ; Focus Input n'est plus choisi tout seul (décision 25) |
+| 50 | 2026-11-12 | haute, corrigé | Premier essai réel (décision 25) : manette restée masquée après l'arrêt du PC, terminal pris pour le jeu, journal bloqué, changement de niveau sans effet avant redémarrage de Focus, sélecteur irrégulier | Corrigé et testé (190 tests) ; 🧑 à revoir à l'écran |
+
 ## Contradictions des specs, réglées par la règle la plus prudente
 
 Priorité haute (v1) contre au-dessus de la normale (v4.1) ; installation des jeux (v4) contre hors périmètre (v4.4) ; suspension en v1 (v2) contre reportée (v4.3) ; interface toujours native (v2) contre lancement via Steam (v1). Le détail est dans `SPEC.md`, section 2.

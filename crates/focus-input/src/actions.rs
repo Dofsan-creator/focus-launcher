@@ -38,9 +38,13 @@ pub enum Action {
 }
 
 /// Délai avant la première répétition, en millisecondes.
-const REPEAT_DELAY_MS: u64 = 260;
-/// Intervalle de répétition.
-const REPEAT_INTERVAL_MS: u64 = 65;
+const REPEAT_DELAY_MS: u64 = 340;
+/// Intervalle de répétition : un pas à la fois reste facile à viser.
+const REPEAT_INTERVAL_MS: u64 = 120;
+/// Intervalle une fois la direction tenue longtemps, pour traverser une longue liste.
+const REPEAT_FAST_MS: u64 = 75;
+/// Nombre de répétitions avant de passer à l'intervalle rapide.
+const REPEATS_BEFORE_FAST: u8 = 8;
 /// Seuil au-delà duquel le stick compte comme une direction.
 const STICK_THRESHOLD: f32 = 0.6;
 /// Maintien du combo pour le panneau rapide.
@@ -65,7 +69,8 @@ const BUTTONS: [(Button, Action); 8] = [
 #[derive(Debug, Default)]
 pub struct ActionMapper {
     previous: PadState,
-    held_direction: Option<(Action, u64)>,
+    /// Direction tenue, instant de la prochaine répétition, répétitions déjà faites.
+    held_direction: Option<(Action, u64, u8)>,
     combo_since: Option<u64>,
     combo_fired: u8,
 }
@@ -115,15 +120,16 @@ impl ActionMapper {
     ) {
         match (direction, self.held_direction) {
             (None, _) => self.held_direction = None,
-            (Some(dir), Some((held, next))) if dir == held => {
+            (Some(dir), Some((held, next, repeats))) if dir == held => {
                 if now_ms >= next {
                     actions.push(dir);
-                    self.held_direction = Some((dir, now_ms + REPEAT_INTERVAL_MS));
+                    let interval = if repeats >= REPEATS_BEFORE_FAST { REPEAT_FAST_MS } else { REPEAT_INTERVAL_MS };
+                    self.held_direction = Some((dir, now_ms + interval, repeats.saturating_add(1)));
                 }
             }
             (Some(dir), _) => {
                 actions.push(dir);
-                self.held_direction = Some((dir, now_ms + REPEAT_DELAY_MS));
+                self.held_direction = Some((dir, now_ms + REPEAT_DELAY_MS, 0));
             }
         }
     }
@@ -181,6 +187,23 @@ mod tests {
         assert_eq!(mapper.update(&hold, first), [Action::Right]);
         assert!(mapper.update(&hold, second - 10).is_empty());
         assert_eq!(mapper.update(&hold, second), [Action::Right]);
+    }
+
+    #[test]
+    fn long_hold_should_speed_up_only_after_several_repeats() {
+        let mut mapper = ActionMapper::default();
+        let hold = pad(&[Button::DpadDown]);
+        mapper.update(&hold, 0);
+        let mut now = REPEAT_DELAY_MS;
+        // Les premières répétitions gardent l'intervalle lent.
+        for _ in 0..REPEATS_BEFORE_FAST {
+            assert_eq!(mapper.update(&hold, now), [Action::Down]);
+            assert!(mapper.update(&hold, now + REPEAT_FAST_MS).is_empty());
+            now += REPEAT_INTERVAL_MS;
+        }
+        // Ensuite l'intervalle rapide suffit.
+        assert_eq!(mapper.update(&hold, now), [Action::Down]);
+        assert_eq!(mapper.update(&hold, now + REPEAT_FAST_MS), [Action::Down]);
     }
 
     #[test]

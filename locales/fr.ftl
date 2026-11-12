@@ -327,3 +327,13 @@ rep-body = Décris ce qui s'est passé. Ton navigateur s'ouvre ensuite sur une f
 rep-describe = Décrire le problème
 rep-send = Ouvrir la fiche
 rep-opened = La fiche est ouverte dans ton navigateur.
+
+# Effet de profil et tutoriel du bouton central (à relire)
+fx-profile = Profil de performance
+guide-title = Le bouton central de ta manette ouvre encore Steam
+guide-step-1 = Ouvre les réglages de Steam avec le bouton ci-dessous, puis choisis « Contrôleur ».
+guide-step-2 = Désactive « Le bouton Guide place Steam au premier plan ».
+guide-step-3 = Désactive « Activer la configuration du bouton guide pour les contrôleurs », puis reviens ici.
+guide-check = C'est fait, vérifier
+guide-later = Plus tard
+guide-show = Voir comment régler ça

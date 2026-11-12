@@ -329,3 +329,13 @@ rep-body = Describe what happened. Your browser then opens on a form that is alr
 rep-describe = Describe the problem
 rep-send = Open the form
 rep-opened = The form is open in your browser.
+
+# Effet de profil et tutoriel du bouton central (à relire)
+fx-profile = Performance profile
+guide-title = The center button of your controller still opens Steam
+guide-step-1 = Open the Steam settings with the button below, then choose "Controller".
+guide-step-2 = Turn off "Guide button focuses Steam".
+guide-step-3 = Turn off "Enable Guide button chords for controller", then come back here.
+guide-check = Done, check
+guide-later = Later
+guide-show = See how to fix this

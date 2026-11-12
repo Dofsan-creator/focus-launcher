@@ -327,3 +327,13 @@ rep-body = Describe lo que ha pasado. Después tu navegador se abre en una ficha
 rep-describe = Describir el problema
 rep-send = Abrir la ficha
 rep-opened = La ficha está abierta en tu navegador.
+
+# Effet de profil et tutoriel du bouton central (à relire)
+fx-profile = Perfil de rendimiento
+guide-title = El botón central de tu mando sigue abriendo Steam
+guide-step-1 = Abre los ajustes de Steam con el botón de abajo y elige «Mando».
+guide-step-2 = Desactiva «El botón Guía enfoca Steam».
+guide-step-3 = Desactiva «Activar la configuración de combinaciones del botón Guía para mandos» y vuelve aquí.
+guide-check = Hecho, comprobar
+guide-later = Más tarde
+guide-show = Ver cómo arreglarlo

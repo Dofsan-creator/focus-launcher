@@ -91,6 +91,10 @@ pub struct Ctx {
     pub flash: RwSignal<bool>,
     /// Question « fermer les applications ouvertes ? » en cours.
     pub apps_ask: RwSignal<bool>,
+    /// Effet plein écran du changement de profil : le niveau qui vient de s'activer.
+    pub fx: RwSignal<Option<String>>,
+    /// Tutoriel « le bouton central ouvre Steam » en cours.
+    pub guide_ask: RwSignal<bool>,
     /// Mise à jour de Focus disponible.
     pub update: RwSignal<Option<api::UpdateInfo>>,
     /// Téléchargement de la mise à jour, en pourcentage.
@@ -112,13 +116,27 @@ const BOOT_MS: f64 = 5600.0;
 pub fn show_profile(ctx: Ctx, report: Option<ConsoleReport>) {
     ctx.profile_busy.set(false);
     let changed = ctx.profile.with_untracked(|known| *known != report);
+    let level_before = ctx.profile.with_untracked(|known| known.as_ref().map(|known| known.level.clone()));
+    let level_now = report.as_ref().map(|report| report.level.clone());
     ctx.profile.set(report.clone());
+    // Toute l'interface prend la couleur du profil actif.
+    if let Some(root) = web_sys::window().and_then(|w| w.document()).and_then(|d| d.document_element()) {
+        let _ = root.set_attribute("data-level", level_now.as_deref().unwrap_or("none"));
+    }
     let Some(report) = report.filter(|_| changed) else {
         return;
     };
     let wait = (BOOT_MS - (js_sys::Date::now() - STARTED.get())).max(0.0);
     set_timeout(
         move || {
+            // Le profil vient de changer : effet plein écran et trois notes, puis l'annonce.
+            if level_before != level_now {
+                ctx.fx.set(level_now.clone());
+                if ctx.settings.with_untracked(|s| s.as_ref().is_some_and(|s| s.sounds)) {
+                    sound::play(Tone::Profile);
+                }
+                set_timeout(move || ctx.fx.set(None), Duration::from_millis(2400));
+            }
             ctx.flash.set(true);
             set_timeout(move || ctx.flash.set(false), Duration::from_secs(7));
             let quiet = on_home(ctx)
@@ -198,6 +216,7 @@ impl Ctx {
         } else if self.dialog_open.get_untracked() && dialog_shown() {
             self.dialog_open.set(false);
             self.apps_ask.set(false);
+            self.guide_ask.set(false);
         } else if self.panel.get_untracked() {
             self.panel.set(false);
             // En jeu, fermer le menu latéral rend la main au jeu, comme sur une console.
@@ -420,7 +439,34 @@ fn on_home(ctx: Ctx) -> bool {
     ctx.screens.read_untracked().last() == Some(&Screen::Home) && !ctx.panel.get_untracked()
 }
 
+thread_local! {
+    /// Dernier geste de navigation : son nom, sa source (manette ou clavier), son heure.
+    static LAST_NAV: std::cell::RefCell<(String, u8, f64)> = const { std::cell::RefCell::new((String::new(), 0, 0.0)) };
+}
+
+/// Quand Steam tourne, il convertit la croix et les boutons de la manette en touches
+/// du clavier : le même geste arrive alors deux fois, par la manette et par le
+/// clavier, et le sélecteur saute une case. Le second, venu de l'autre source dans
+/// l'instant, est ignoré.
+fn duplicate(action: &str, source: u8) -> bool {
+    let now = js_sys::Date::now();
+    LAST_NAV.with(|cell| {
+        let mut last = cell.borrow_mut();
+        if last.0 == action && last.1 != source && now - last.2 < 160.0 {
+            return true;
+        }
+        *last = (action.to_owned(), source, now);
+        false
+    })
+}
+
+const FROM_PAD: u8 = 1;
+const FROM_KEYBOARD: u8 = 2;
+
 fn route_action(ctx: Ctx, action: &str) {
+    if matches!(action, "up" | "down" | "left" | "right" | "confirm" | "back") && duplicate(action, FROM_PAD) {
+        return;
+    }
     ctx.device.set(Device::Pad);
     match action {
         "up" => step(ctx, Direction::Up),
@@ -529,6 +575,20 @@ fn cycle_filter(ctx: Ctx, delta: i32) {
 }
 
 fn on_key(ctx: Ctx, event: &KeyboardEvent) {
+    // Le même geste vient d'arriver par la manette : cette touche est sa copie.
+    let twin = match event.key().as_str() {
+        "ArrowUp" => Some("up"),
+        "ArrowDown" => Some("down"),
+        "ArrowLeft" => Some("left"),
+        "ArrowRight" => Some("right"),
+        "Enter" => Some("confirm"),
+        "Escape" => Some("back"),
+        _ => None,
+    };
+    if twin.is_some_and(|action| duplicate(action, FROM_KEYBOARD)) {
+        event.prevent_default();
+        return;
+    }
     ctx.device.set(Device::Keyboard);
     if ctx.editing.read_untracked().is_some() {
         // Le clavier physique écrit directement dans la saisie en cours.
@@ -640,6 +700,8 @@ pub fn App() -> impl IntoView {
         profile_busy: RwSignal::new(false),
         flash: RwSignal::new(false),
         apps_ask: RwSignal::new(false),
+        fx: RwSignal::new(None),
+        guide_ask: RwSignal::new(false),
         update: RwSignal::new(None),
         update_progress: RwSignal::new(None),
     };
@@ -732,6 +794,16 @@ pub fn App() -> impl IntoView {
             ctx.update.set(Some(update));
         }
     });
+    // Steam capte encore le bouton central ? Le tutoriel s'ouvre une fois, sur l'accueil.
+    spawn_local(async move {
+        wait_ms(BOOT_MS as i32 + 9000).await;
+        let grabbed = invoke::<Option<bool>>("steam_guide_status", json!({})).await.ok().flatten() == Some(true);
+        if grabbed && on_home(ctx) && !ctx.dialog_open.get_untracked() && ctx.running.with_untracked(Option::is_none) {
+            ctx.guide_ask.set(true);
+            ctx.dialog_open.set(true);
+            after_render(nav::focus_first);
+        }
+    });
     api::listen("update-progress", move |value| {
         let read = |key: &str| js_sys::Reflect::get(&value, &key.into()).ok().and_then(|v| v.as_f64()).unwrap_or(0.0);
         let (done, total) = (read("done"), read("total"));
@@ -810,7 +882,10 @@ pub fn App() -> impl IntoView {
         <TextOverlay/>
         <LaunchOverlay/>
         <AppsDialog/>
+        <GuideDialog/>
+        <div class="profile-line"></div>
         <ProfileFlash/>
+        <ProfileFx/>
         <Toast/>
         <Hints/>
     }

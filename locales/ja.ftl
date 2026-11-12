@@ -319,3 +319,13 @@ rep-body = 何が起きたかを書いてください。そのあとブラウザ
 rep-describe = 問題を説明する
 rep-send = フォームを開く
 rep-opened = フォームをブラウザーで開きました。
+
+# Effet de profil et tutoriel du bouton central (à relire)
+fx-profile = パフォーマンスプロファイル
+guide-title = コントローラーの中央ボタンがまだ Steam を開きます
+guide-step-1 = 下のボタンで Steam の設定を開き、「コントローラー」を選びます。
+guide-step-2 = 「ガイドボタンで Steam にフォーカス」をオフにします。
+guide-step-3 = 「コントローラーのガイドボタンコード設定を有効にする」をオフにして、ここに戻ります。
+guide-check = 完了、確認する
+guide-later = あとで
+guide-show = 直し方を見る

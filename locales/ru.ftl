@@ -336,3 +336,13 @@ rep-body = Опишите, что произошло. Затем в браузе
 rep-describe = Описать проблему
 rep-send = Открыть форму
 rep-opened = Форма открыта в браузере.
+
+# Effet de profil et tutoriel du bouton central (à relire)
+fx-profile = Профиль производительности
+guide-title = Центральная кнопка геймпада всё ещё открывает Steam
+guide-step-1 = Откройте настройки Steam кнопкой ниже и выберите «Контроллер».
+guide-step-2 = Отключите «Кнопка Guide выводит Steam на передний план».
+guide-step-3 = Отключите «Включить сочетания с кнопкой Guide для контроллеров» и вернитесь сюда.
+guide-check = Готово, проверить
+guide-later = Позже
+guide-show = Как это исправить

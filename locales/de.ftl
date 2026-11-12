@@ -327,3 +327,13 @@ rep-body = Beschreibe, was passiert ist. Danach öffnet sich dein Browser mit ei
 rep-describe = Problem beschreiben
 rep-send = Formular öffnen
 rep-opened = Das Formular ist in deinem Browser geöffnet.
+
+# Effet de profil et tutoriel du bouton central (à relire)
+fx-profile = Leistungsprofil
+guide-title = Die mittlere Taste deines Controllers öffnet noch Steam
+guide-step-1 = Öffne die Steam-Einstellungen mit der Schaltfläche unten und wähle „Controller“.
+guide-step-2 = Schalte „Guide-Taste bringt Steam in den Vordergrund“ aus.
+guide-step-3 = Schalte „Guide-Tasten-Kombinationen für Controller aktivieren“ aus und komm dann hierher zurück.
+guide-check = Erledigt, prüfen
+guide-later = Später
+guide-show = So lässt es sich beheben

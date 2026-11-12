@@ -257,7 +257,11 @@ impl SystemOps for WinOps {
     }
 
     fn unthrottle(&mut self, process: &ProcessInfo, class: u32) -> Result<(), OpError> {
-        let handle = Process::open(process.pid, PROCESS_SET_INFORMATION)?;
+        // Un programme que Windows refuse d'ouvrir n'a pas pu être ralenti non plus :
+        // il n'y a rien à lui rendre, et le journal ne doit pas rester bloqué dessus.
+        let Ok(handle) = Process::open(process.pid, PROCESS_SET_INFORMATION) else {
+            return Ok(());
+        };
         set_efficiency(handle.0, false)?;
         // SAFETY: handle valide.
         unsafe { SetPriorityClass(handle.0, PROCESS_CREATION_FLAGS(class)) }

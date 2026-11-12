@@ -274,6 +274,73 @@ pub fn ProfileFlash() -> impl IntoView {
     }
 }
 
+/// Effet du changement de profil : tout l'écran prend la couleur du nouveau profil,
+/// un trait de lumière le traverse, et son nom s'affiche en grand. Deux secondes,
+/// sans rien bloquer.
+#[component]
+pub fn ProfileFx() -> impl IntoView {
+    let (ctx, i18n) = (ctx(), use_i18n());
+    move || {
+        let level = ctx.fx.get()?;
+        let title = i18n.t(&format!("opt-{level}"));
+        Some(view! {
+            <div class="fx" data-level=level role="status">
+                <span class="fx-sweep"></span>
+                <Icon name="bolt"/>
+                <small>{i18n.t("fx-profile")}</small>
+                <strong>{title}</strong>
+                <span class="fx-line"></span>
+            </div>
+        })
+    }
+}
+
+/// Tutoriel : Steam ouvre son propre plein écran quand on appuie sur le bouton central
+/// de la manette, par-dessus Focus et les jeux. Trois étapes, un bouton qui ouvre le
+/// bon réglage de Steam, un bouton qui vérifie que c'est fait.
+#[component]
+pub fn GuideDialog() -> impl IntoView {
+    let (ctx, i18n) = (ctx(), use_i18n());
+    let still = RwSignal::new(false);
+    let open = move |_| {
+        spawn_local(async move {
+            let _ = invoke::<Value>("open_steam_controller_settings", json!({})).await;
+        });
+    };
+    let check = move |_| {
+        spawn_local(async move {
+            let grabbed = invoke::<Option<bool>>("steam_guide_status", json!({})).await.ok().flatten();
+            if grabbed == Some(true) {
+                still.set(true);
+            } else {
+                still.set(false);
+                ctx.guide_ask.set(false);
+                ctx.dialog_open.set(false);
+                ctx.toast.set(Some("steam-guide-off".to_owned()));
+                after_render(nav::focus_first);
+            }
+        });
+    };
+    view! {
+        <Show when=move || ctx.guide_ask.get() && ctx.dialog_open.get()>
+            <div class="dialog"><div class="card wide">
+                <h2><Icon name="gamepad"/>{move || i18n.t("guide-title")}</h2>
+                <ol class="guide-steps">
+                    <li>{move || i18n.t("guide-step-1")}</li>
+                    <li>{move || i18n.t("guide-step-2")}</li>
+                    <li>{move || i18n.t("guide-step-3")}</li>
+                </ol>
+                <Show when=move || still.get()><p class="warn">{move || i18n.t("steam-guide-on")}</p></Show>
+                <div class="row">
+                    <button class="f primary" data-auto="" on:click=open>{move || i18n.t("steam-guide-open")}</button>
+                    <button class="f" on:click=check>{move || i18n.t("guide-check")}</button>
+                    <button class="f" on:click=move |_| ctx.back()>{move || i18n.t("guide-later")}</button>
+                </div>
+            </div></div>
+        </Show>
+    }
+}
+
 /// Question posée une fois : des applications sont encore ouvertes, faut-il les
 /// fermer ? Aucune n'est forcée : celle qui propose d'enregistrer reste ouverte.
 #[component]
@@ -1016,11 +1083,13 @@ pub fn OptimizationChoice() -> impl IntoView {
     let options = [("off", "opt-off", "opt-off-body"), ("balanced", "opt-balanced", "opt-balanced-body"), ("max", "opt-max", "opt-max-body")]
         .into_iter()
         .map(|(level, title, body)| view! {
-            <button class="f option" aria-pressed=move || (current() == level).to_string()
+            <button class="f option" data-level=level aria-pressed=move || (current() == level).to_string()
                 data-auto=(level == "max").then_some("")
                 on:click=move |_| {
                     if level == "off" {
                         ctx.update_settings(|s| s.optimization = level.to_owned());
+                        // Le PC change de profil tout de suite, et l'écran le montre.
+                        apply_console();
                     } else if current() != level {
                         pending.set(Some(level));
                         ctx.dialog_open.set(true);
@@ -1039,6 +1108,7 @@ pub fn OptimizationChoice() -> impl IntoView {
                 on_yes=Callback::new(move |_| {
                     if let Some(level) = pending.get_untracked() {
                         ctx.update_settings(|s| s.optimization = level.to_owned());
+                        apply_console();
                     }
                     pending.set(None);
                     ctx.back();
@@ -1179,12 +1249,12 @@ fn SettingsScreen() -> impl IntoView {
                 <p class="muted">{move || i18n.t("ctl-native-note")}</p>
                 {move || steam_guide.get().map(|focuses| if focuses {
                     view! {
-                        <p class="warn">{move || i18n.t("steam-guide-on")}</p>
+                        <p class="warn">{move || i18n.t("guide-title")}</p>
                         <button class="f pill" on:click=move |_| {
-                            spawn_local(async move {
-                                let _ = invoke::<Value>("open_steam_controller_settings", json!({})).await;
-                            });
-                        }>{move || i18n.t("steam-guide-open")}</button>
+                            ctx.guide_ask.set(true);
+                            ctx.dialog_open.set(true);
+                            after_render(nav::focus_first);
+                        }><Icon name="info"/><span>{move || i18n.t("guide-show")}</span></button>
                     }.into_any()
                 } else {
                     view! { <p class="ok">{move || i18n.t("steam-guide-off")}</p> }.into_any()

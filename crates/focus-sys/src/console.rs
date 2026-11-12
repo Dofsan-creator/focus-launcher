@@ -338,7 +338,7 @@ pub fn stop_shell() -> bool {
             let _ = PostMessageW(tray, EXIT_EXPLORER, WPARAM(0), LPARAM(0));
         }
     }
-    for _ in 0..40 {
+    for _ in 0..20 {
         if explorers().is_empty() {
             return true;
         }
@@ -350,8 +350,14 @@ pub fn stop_shell() -> bool {
             tracing::warn!("desktop process {pid} not stopped: {err}");
         }
     }
-    std::thread::sleep(std::time::Duration::from_millis(500));
-    explorers().is_empty()
+    // L'arrêt met un instant à se voir dans la liste des processus.
+    for _ in 0..20 {
+        if explorers().is_empty() {
+            return true;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(100));
+    }
+    false
 }
 
 /// Relance le bureau de Windows avec les droits normaux de l'utilisateur. Sans effet

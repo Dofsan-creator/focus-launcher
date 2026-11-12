@@ -81,6 +81,9 @@
           "Arabic"
         ],
         "displayLanguageSelector": true,
+        "installerIcon": "icons/icon.ico",
+        "headerImage": "installer/header.bmp",
+        "sidebarImage": "installer/sidebar.bmp",
         "installerHooks": "./nsis-hooks.nsh"
       }
     },

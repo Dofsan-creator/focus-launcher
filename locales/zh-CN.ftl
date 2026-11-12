@@ -319,3 +319,13 @@ rep-body = 请描述发生了什么。随后浏览器会打开一张已填好的
 rep-describe = 描述问题
 rep-send = 打开表单
 rep-opened = 表单已在浏览器中打开。
+
+# Effet de profil et tutoriel du bouton central (à relire)
+fx-profile = 性能模式
+guide-title = 手柄的中间按键仍然会打开 Steam
+guide-step-1 = 用下面的按钮打开 Steam 设置，然后选择“控制器”。
+guide-step-2 = 关闭“导航键使 Steam 获得焦点”。
+guide-step-3 = 关闭“为控制器启用导航键组合键配置”，然后回到这里。
+guide-check = 已完成，检查
+guide-later = 稍后
+guide-show = 查看解决方法

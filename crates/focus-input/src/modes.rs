@@ -37,9 +37,12 @@ pub struct Environment {
 /// jamais choisi tout seul sans HidHide ; la manette reste en natif (USB ou
 /// Bluetooth, Windows et la plupart des jeux la reconnaissent).
 pub fn resolve_mode(family: Family, env: Environment, user_choice: Option<Mode>) -> Mode {
+    // Focus Input masque la vraie manette pendant le jeu. Si le PC s'arrête
+    // brutalement à ce moment, elle reste masquée jusqu'au prochain démarrage de
+    // Focus (vu le 2026-11-12). Il n'est donc plus jamais choisi tout seul : il faut
+    // le demander dans les paramètres.
     let candidate = user_choice.unwrap_or(match family {
         Family::PlayStation if env.steam_running => Mode::SteamInput,
-        Family::PlayStation if env.vigem_present && env.hidhide_present => Mode::FocusInput,
         _ => Mode::Native,
     });
     match candidate {
@@ -130,13 +133,14 @@ mod tests {
     }
 
     #[test]
-    fn ds4_without_steam_should_default_to_focus_input() {
+    fn ds4_without_steam_should_stay_native_unless_focus_input_is_asked_for() {
         let env = Environment {
             steam_running: false,
             ..ALL
         };
+        assert_eq!(resolve_mode(Family::PlayStation, env, None), Mode::Native);
         assert_eq!(
-            resolve_mode(Family::PlayStation, env, None),
+            resolve_mode(Family::PlayStation, env, Some(Mode::FocusInput)),
             Mode::FocusInput
         );
     }

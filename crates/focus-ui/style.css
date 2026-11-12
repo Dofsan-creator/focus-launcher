@@ -383,9 +383,49 @@ img { user-select: none; }
   background: var(--glass); color: var(--muted); font-weight: 650;
 }
 .f.profile .icon { width: 1.05em; height: 1.05em; }
-.f.profile.on { color: var(--text); box-shadow: inset 0 0 0 2px var(--accent); }
-.f.profile.on .icon { color: var(--accent); }
-.f.profile.on:focus { box-shadow: inset 0 0 0 2px var(--accent), 0 0 0 3px var(--text); }
+.f.profile.on { color: var(--text); box-shadow: inset 0 0 0 2px var(--profile); }
+.f.profile.on .icon { color: var(--profile); }
+.f.profile.on:focus { box-shadow: inset 0 0 0 2px var(--profile), 0 0 0 3px var(--text); }
+
+/* Chaque profil a sa couleur, reprise partout : gris quand rien n'est optimisé, bleu
+   pour l'équilibré, orange pour le maximal. Un trait en haut de l'écran la rappelle. */
+:root { --profile: #8a8f99; }
+:root[data-level="balanced"] { --profile: #4aa8ff; }
+:root[data-level="max"] { --profile: #ff9d2e; }
+.profile-line { position: fixed; top: 0; inset-inline: 0; height: 3px; z-index: 35; background: var(--profile); opacity: 0; transition: opacity var(--slow), background-color var(--slow); pointer-events: none; }
+:root[data-level="off"] .profile-line, :root[data-level="balanced"] .profile-line, :root[data-level="max"] .profile-line { opacity: 1; }
+.f.option[data-level="off"] { --level: #8a8f99; }
+.f.option[data-level="balanced"] { --level: #4aa8ff; }
+.f.option[data-level="max"] { --level: #ff9d2e; }
+.f.option[data-level] .icon { color: var(--level); }
+.f.option[data-level][aria-pressed="true"] { background: color-mix(in srgb, var(--level) 22%, var(--surface)); box-shadow: inset 0 0 0 2px var(--level); }
+.f.option[data-level][aria-pressed="true"]:focus { box-shadow: inset 0 0 0 2px var(--level), 0 0 0 3px var(--text); }
+
+/* Effet du changement de profil : l'écran prend la couleur du profil, un trait de
+   lumière le traverse, le nom s'affiche en grand. Uniquement transform et opacity. */
+.fx {
+  position: fixed; inset: 0; z-index: 88; pointer-events: none;
+  display: grid; place-items: center; align-content: center; gap: 12px; overflow: hidden;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--fx) 30%, #050608) 0%, #050608 72%);
+  animation: fx-life 2400ms ease-in-out forwards;
+}
+.fx[data-level="off"] { --fx: #8a8f99; }
+.fx[data-level="balanced"] { --fx: #4aa8ff; }
+.fx[data-level="max"] { --fx: #ff9d2e; }
+@keyframes fx-life { 0% { opacity: 0; } 10% { opacity: 1; } 78% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+.fx-sweep { position: absolute; inset: 0; background: linear-gradient(100deg, transparent 38%, color-mix(in srgb, var(--fx) 55%, transparent) 50%, transparent 62%); transform: translateX(-100%); animation: fx-sweep 1000ms var(--ease) 120ms both; }
+@keyframes fx-sweep { to { transform: translateX(100%); } }
+.fx > .icon { position: relative; width: 13vmin; height: 13vmin; color: var(--fx); animation: fx-bolt 900ms var(--spring) 200ms both; }
+@keyframes fx-bolt { from { opacity: 0; transform: translateY(-40px) scale(0.5); } }
+.fx small { position: relative; letter-spacing: 0.32em; text-transform: uppercase; color: var(--muted); animation: hero-in var(--slow) var(--ease) 380ms both; }
+.fx strong { position: relative; font-size: clamp(36px, 5vw, 92px); font-weight: 800; letter-spacing: -0.01em; animation: fx-name 700ms var(--spring) 460ms both; }
+@keyframes fx-name { from { opacity: 0; transform: scale(1.18); } }
+.fx-line { position: relative; width: min(560px, 62vw); height: 3px; border-radius: 2px; background: var(--fx); transform-origin: center; animation: boot-line 900ms var(--ease) 560ms both; }
+
+/* Tutoriel du bouton central */
+.dialog .card.wide { width: min(820px, 94vw); }
+.guide-steps { margin: 0; padding-inline-start: 1.4em; display: flex; flex-direction: column; gap: 0.6em; font-size: 1.05em; }
+.guide-steps li::marker { color: var(--accent); font-weight: 750; }
 .f.profile.busy .icon { animation: pulse 1s ease-in-out infinite; }
 .f.profile .gain { color: var(--ok); font-variant-numeric: tabular-nums; }
 

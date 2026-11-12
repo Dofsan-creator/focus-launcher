@@ -212,6 +212,20 @@ Preuve : 179 tests verts, lint sans avertissement (cœur, Windows, application, 
 
 Non prouvé : aucune version n'est encore publiée, donc la mise à jour n'a jamais été reçue ni installée ; l'ouverture de la fiche dans le navigateur n'a pas été vue, bureau arrêté.
 
+## 25. Leçons du premier essai réel du mode console v2 (2026-11-12)
+
+Essai fait avec l'utilisateur sur l'exécutable publié. Vu au journal : bureau arrêté, lancement de Steam par jeton sans bureau, puissance « performances élevées », 30 programmes ralentis, 4 services en pause, plan appliqué en 3,5 s au second passage.
+
+| Constat | Options | Choix |
+| --- | --- | --- |
+| Manette restée masquée après un arrêt brutal du PC (HidHide actif, journal jamais rendu) | Rendre au démarrage de Windows par le guardian ; ne plus masquer tout seul | **« Auto » ne choisit plus Focus Input** : la manette reste native, Focus Input se demande dans les paramètres. Une manette invisible est pire qu'une manette mal reconnue par un vieux jeu |
+| Sélecteur tantôt lent, tantôt trop rapide | Garder ; ralentir ; ralentir et filtrer | Répétition à 120 ms (au lieu de 65), accélérée à 75 ms après 8 pas ; un même geste reçu de la manette **et** du clavier en moins de 160 ms ne compte qu'une fois (Steam convertit la croix en touches fléchées) |
+| Changement de profil peu visible | Annonce seule ; effet plein écran | **Effet plein écran** (couleur propre au profil, trait de lumière, nom en grand, trois notes), trait de couleur permanent en haut de l'écran, et le changement de niveau s'applique tout de suite au lieu d'attendre un redémarrage de Focus |
+| Bouton central capté par Steam | Modifier le réglage de Steam (interdit, règle 3) ; tutoriel | **Tutoriel en trois étapes** ouvert une fois sur l'accueil, avec un bouton vers le bon réglage de Steam et un bouton qui vérifie |
+| Terminal pris pour le jeu | — | Un programme qui tournait avant le lancement n'est jamais pris pour le jeu |
+| Journal bloqué par des programmes que Windows refuse d'ouvrir | — | Rien à rendre à un programme qu'on n'a pas pu ralentir |
+| Installeur | Aspect par défaut ; images de Focus | Bandeau et panneau latéral dessinés pour Focus, icône de Focus |
+
 ## Propositions de changement (à trancher par l'utilisateur)
 
 1. Livrer d'abord les 11 langues actuelles, puis les autres par la communauté (v4.4 demande toutes les langues de Windows avant la sortie).
