@@ -46,7 +46,7 @@ html, body { margin: 0; height: 100%; overflow: hidden; }
 body {
   background: var(--bg);
   color: var(--text);
-  font: 400 clamp(15px, 1.05vw, 22px) / 1.45 var(--font);
+  font: 400 clamp(16px, 1.25vw, 28px) / 1.45 var(--font);
   user-select: none;
   -webkit-font-smoothing: antialiased;
 }
@@ -301,15 +301,15 @@ img { user-select: none; }
 .spinner { position: relative; width: 34px; height: 34px; border-radius: 50%; border: 3px solid rgba(255, 255, 255, 0.2); border-top-color: var(--accent); animation: spin 0.9s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Démarrage (5,5 s) : le nom se révèle lettre à lettre, une ligne de lumière le
+/* Démarrage (2,6 s) : le nom se révèle lettre à lettre, une ligne de lumière le
    traverse, puis l’écran s’ouvre sur l’accueil. Aucun cercle. */
-.boot { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; align-content: center; gap: 18px; background: #050608; pointer-events: none; animation: boot-out 5500ms ease-in forwards; }
+.boot { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; align-content: center; gap: 18px; background: #050608; pointer-events: none; animation: boot-out 2600ms ease-in forwards; }
 .boot-word { font-size: clamp(48px, 7vw, 120px); font-weight: 800; letter-spacing: 0.42em; text-indent: 0.42em; color: var(--text);
   background: linear-gradient(90deg, var(--text) 0%, var(--text) 40%, var(--accent) 50%, var(--text) 60%, var(--text) 100%);
   background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-  animation: boot-word 3200ms var(--ease) both, boot-shine 2600ms ease-in-out 1200ms both; }
-.boot-line { width: min(520px, 60vw); height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); transform-origin: center; animation: boot-line 2400ms var(--ease) 900ms both; }
-@keyframes boot-out { 0%, 85% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
+  animation: boot-word 1400ms var(--ease) both, boot-shine 1300ms ease-in-out 400ms both; }
+.boot-line { width: min(520px, 60vw); height: 2px; background: linear-gradient(90deg, transparent, var(--accent), transparent); transform-origin: center; animation: boot-line 1100ms var(--ease) 300ms both; }
+@keyframes boot-out { 0%, 80% { opacity: 1; } 100% { opacity: 0; visibility: hidden; } }
 @keyframes boot-word { from { opacity: 0; transform: scale(1.18); } to { opacity: 1; transform: none; } }
 @keyframes boot-shine { from { background-position: 100% 0; } to { background-position: 0 0; } }
 @keyframes boot-line { from { opacity: 0; transform: scaleX(0); } to { opacity: 1; transform: scaleX(1); } }
@@ -429,6 +429,13 @@ img { user-select: none; }
 .fx strong { position: relative; font-size: clamp(36px, 5vw, 92px); font-weight: 800; letter-spacing: -0.01em; animation: fx-name 700ms var(--spring) 460ms both; }
 @keyframes fx-name { from { opacity: 0; transform: scale(1.18); } }
 .fx-line { position: relative; width: min(560px, 62vw); height: 3px; border-radius: 2px; background: var(--fx); transform-origin: center; animation: boot-line 900ms var(--ease) 560ms both; }
+
+/* Volume général du panneau rapide */
+.volume-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; padding: 10px 14px; border-radius: var(--radius-lg); background: var(--surface); }
+.volume-label { font-weight: 650; margin-inline-end: auto; }
+.volume-meter { flex: 0 1 220px; }
+.volume-meter span { animation: none; transition: width var(--fast) ease-out; }
+.volume-value { min-width: 3.6em; text-align: end; font-variant-numeric: tabular-nums; }
 
 /* Tuile de la souris à la manette : son aide tient sous le titre. */
 .qtile-hint { color: var(--muted); font-size: 0.78em; font-weight: 500; line-height: 1.3; }

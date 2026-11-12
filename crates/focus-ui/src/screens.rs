@@ -1,7 +1,7 @@
 //! Écrans de l'interface, direction « Lumen ». Aucun texte en dur : tout passe
 //! par les traductions. Tout élément interactif est un `button.f`.
 
-use crate::api::{gb, invoke, CatalogItem, ConsoleReport, ControllerStatus, DirItem, Merged, Preview, SystemReport};
+use crate::api::{gb, invoke, CatalogItem, ConsoleReport, ControllerStatus, DirItem, Merged, SystemReport};
 use crate::app::{after_render, ctx, Ctx, Device, Screen, TextEdit};
 use crate::connect::ConnectionsScreen;
 use crate::i18n::{use_i18n, LANGS};
@@ -11,7 +11,6 @@ use crate::nav;
 use crate::setup::SetupScreen;
 use focus_core::art::ArtKind;
 use focus_core::model::{EntryKind, Store};
-use focus_core::plan::Step;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use serde_json::{json, Value};
@@ -49,7 +48,7 @@ fn store_name(store: Store) -> &'static str {
 /// Entrée mise en avant : la fiche ouverte, sinon la sélection de l'accueil.
 fn focus_entry(ctx: Ctx) -> Option<Merged> {
     let wanted = ctx.screens.with(|list| match list.last() {
-        Some(Screen::Detail(id)) | Some(Screen::Prepare(id)) => Some(id.clone()),
+        Some(Screen::Detail(id)) => Some(id.clone()),
         _ => None,
     });
     if let Some(id) = wanted {
@@ -135,7 +134,6 @@ pub fn CurrentScreen() -> impl IntoView {
         Some(Screen::Setup(step)) => view! { <SetupScreen step=step/> }.into_any(),
         Some(Screen::Home) => view! { <HomeScreen/> }.into_any(),
         Some(Screen::Detail(id)) => view! { <DetailScreen id=id/> }.into_any(),
-        Some(Screen::Prepare(id)) => view! { <PrepareScreen id=id/> }.into_any(),
         Some(Screen::Ended(end)) => view! { <EndedScreen end=end/> }.into_any(),
         Some(Screen::Settings) => view! { <SettingsScreen/> }.into_any(),
         Some(Screen::Connections) => view! { <ConnectionsScreen/> }.into_any(),
@@ -986,60 +984,6 @@ fn DetailScreen(id: String) -> impl IntoView {
     }
 }
 
-fn step_text(i18n: crate::i18n::I18n, step: &Step) -> String {
-    match step {
-        Step::KeepAwake => i18n.t("prep-awake"),
-        Step::HighPerformancePower => i18n.t("prep-power"),
-        Step::Throttle { process } => i18n.ts("prep-throttle", "name", &process.name),
-        Step::Suspend { process } => i18n.ts("prep-suspend", "name", &process.name),
-        Step::Close { process, .. } => i18n.ts("prep-close", "name", &process.name),
-        Step::StopService { name } => i18n.ts("prep-service", "name", name),
-    }
-}
-
-#[component]
-fn PrepareScreen(id: String) -> impl IntoView {
-    let (ctx, i18n) = (ctx(), use_i18n());
-    let preview = RwSignal::new(None::<Preview>);
-    let request = id.clone();
-    spawn_local(async move {
-        preview.set(invoke("preview_session", json!({ "id": request })).await.ok());
-        after_render(nav::focus_first);
-    });
-    view! {
-        <main class="screen sheet-screen">
-            <h1>{move || i18n.t("prep-title")}</h1>
-            {move || preview.get().map(|preview| {
-                let empty = preview.plan.steps.is_empty();
-                let lines = preview.plan.steps.clone().into_iter()
-                    .map(|step| view! { <li>{move || step_text(i18n, &step)}</li> })
-                    .collect_view();
-                // Un navigateur ouvre un processus par onglet : une seule ligne par nom.
-                let mut names: Vec<_> = preview.plan.ask_user.clone();
-                names.sort_by(|a, b| a.name.cmp(&b.name));
-                names.dedup_by(|a, b| a.name == b.name);
-                let asks = names.into_iter()
-                    .map(|ask| view! { <li>{move || i18n.ts("prep-ask", "name", &ask.name)}</li> })
-                    .collect_view();
-                view! {
-                    <p>{move || i18n.t(if preview.simulation { "prep-simulation" } else { "prep-real" })}</p>
-                    <Show when=move || !preview.guardian && !preview.simulation>
-                        <p class="warn">{move || i18n.t("prep-no-guardian")}</p>
-                    </Show>
-                    <Show when=move || empty><p>{move || i18n.t("prep-nothing")}</p></Show>
-                    <ul class="steps-list">{lines}{asks}</ul>
-                }
-            })}
-            <div class="row">
-                <button class="f play" data-auto="" on:click=move |_| ctx.launch(id.clone())>
-                    <Icon name="play"/><span>{move || i18n.t("prep-start")}</span>
-                </button>
-                <button class="f pill" on:click=move |_| ctx.back()>{move || i18n.t("prep-cancel")}</button>
-            </div>
-        </main>
-    }
-}
-
 #[component]
 fn EndedScreen(end: crate::api::SessionEnd) -> impl IntoView {
     let (ctx, i18n) = (ctx(), use_i18n());
@@ -1603,6 +1547,41 @@ fn PowerScreen() -> impl IntoView {
     }
 }
 
+/// Volume général, réglable à la manette par pas de 10 %.
+#[component]
+fn VolumeRow() -> impl IntoView {
+    let i18n = use_i18n();
+    let volume = RwSignal::new(None::<f32>);
+    spawn_local(async move {
+        volume.set(invoke::<Option<f32>>("master_volume", json!({})).await.ok().flatten());
+    });
+    let change = move |delta: f32| {
+        let level = (volume.get_untracked().unwrap_or(0.5) + delta).clamp(0.0, 1.0);
+        volume.set(Some(level));
+        spawn_local(async move {
+            if let Ok(Some(level)) = invoke::<Option<f32>>("set_master_volume", json!({ "level": level })).await {
+                volume.set(Some(level));
+            }
+        });
+    };
+    move || {
+        let level = volume.get()?;
+        let percent = (level * 100.0).round() as u32;
+        Some(view! {
+            <div class="volume-row">
+                <Icon name="volume"/>
+                <span class="volume-label">{i18n.t("vol-title")}</span>
+                <button class="f round" title=i18n.t("vol-down") aria-label=i18n.t("vol-down")
+                    on:click=move |_| change(-0.1)><Icon name="minus"/></button>
+                <span class="meter volume-meter"><span style:width=format!("{percent}%")></span></span>
+                <span class="volume-value">{format!("{percent} %")}</span>
+                <button class="f round" title=i18n.t("vol-up") aria-label=i18n.t("vol-up")
+                    on:click=move |_| change(0.1)><Icon name="add"/></button>
+            </div>
+        })
+    }
+}
+
 /// Panneau rapide : monte du bas, accessible partout et pendant un jeu.
 #[component]
 pub fn QuickPanel() -> impl IntoView {
@@ -1699,6 +1678,7 @@ pub fn QuickPanel() -> impl IntoView {
                     </div>
                 }
             })}
+            <VolumeRow/>
             <div class="qtiles">
                 <Show when=move || ctx.running.with(Option::is_some)>
                     {tile("display", "panel-screenshot", Callback::new(move |_| {

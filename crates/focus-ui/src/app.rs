@@ -1,6 +1,6 @@
 //! Racine de l'application : état partagé et routage des entrées.
 
-use crate::api::{self, invoke, ConsoleReport, Merged, NetStatus, Preview, RunningEntry, SessionEnd, Settings};
+use crate::api::{self, invoke, ConsoleReport, Merged, NetStatus, RunningEntry, SessionEnd, Settings};
 use crate::i18n::{best_match, I18n, LANGS};
 use crate::nav;
 use crate::screens::*;
@@ -24,7 +24,6 @@ pub enum Screen {
     Setup(u8),
     Home,
     Detail(String),
-    Prepare(String),
     Ended(SessionEnd),
     Settings,
     Connections,
@@ -131,7 +130,7 @@ fn remember_guide_shown() {
 }
 
 /// Durée de l'animation de démarrage (voir `.boot` dans `style.css`), en millisecondes.
-const BOOT_MS: f64 = 5600.0;
+const BOOT_MS: f64 = 2700.0;
 
 /// Reçoit le bilan du mode console : la pastille change, l'annonce descend, et la
 /// question sur les applications ouvertes est posée une fois, sur l'accueil.
@@ -300,25 +299,11 @@ impl Ctx {
         });
     }
 
-    /// Lance une entrée en un appui. L'écran de préparation n'apparaît que si une
-    /// session réelle demande un choix (un navigateur ouvert, par exemple).
+    /// Lance une entrée en un appui, comme sur une console. Les programmes à fermer
+    /// (navigateurs ouverts…) sont proposés par une seule question à l'ouverture de
+    /// Focus, jamais au moment de jouer.
     pub fn play(&self, id: String) {
-        let ctx = *self;
-        let real = ctx
-            .settings
-            .with_untracked(|s| s.as_ref().is_some_and(|s| s.optimization != "off"));
-        if !real {
-            ctx.launch(id);
-            return;
-        }
-        spawn_local(async move {
-            let preview: Option<Preview> = invoke("preview_session", json!({ "id": id })).await.ok();
-            if preview.is_some_and(|p| !p.simulation && !p.plan.ask_user.is_empty()) {
-                ctx.push(Screen::Prepare(id));
-            } else {
-                ctx.launch(id);
-            }
-        });
+        self.launch(id);
     }
 
     /// Lance pour de bon, après l'animation d'ouverture.

@@ -341,3 +341,6 @@ guide-show = Voir comment régler ça
 # Souris à la manette (à relire)
 pointer-tile = Souris à la manette
 pointer-hint = Stick gauche : bouger · bas : cliquer · droite : clic droit · haut : clavier · bouton central : terminer
+vol-title = Volume
+vol-down = Moins fort
+vol-up = Plus fort

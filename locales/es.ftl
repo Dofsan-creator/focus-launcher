@@ -341,3 +341,6 @@ guide-show = Ver cómo arreglarlo
 # Souris à la manette (à relire)
 pointer-tile = Mando como ratón
 pointer-hint = Stick izquierdo: mover · abajo: clic · derecha: clic derecho · arriba: teclado · botón central: terminar
+vol-title = Volumen
+vol-down = Más bajo
+vol-up = Más alto

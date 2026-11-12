@@ -262,6 +262,17 @@ Vérifié sans plantage ni erreur de console : assistant complet, accueil, rang�
 
 Logique pure dans `focus-input::pointer` (7 tests), envoi dans `focus-sys::pointer`. Non essayé avec une vraie manette.
 
+## 29. Interface pour le canapé, volume général (2026-11-12)
+
+| Point | Choix |
+| --- | --- |
+| Démarrage | Animation de 5,5 s ramenée à 2,6 s |
+| Taille du texte | Texte de base porté à 1,25 % de la largeur (24 px sur un écran 1920, au lieu de 20), pour une télé vue de loin |
+| Écran « Préparation » | Retiré : il listait des programmes et disait « À toi de choisir » sans offrir de choix. « Jouer » lance directement ; les applications à fermer sont proposées par une seule question à l'ouverture de Focus |
+| Volume | Ligne de volume général dans le panneau rapide, par pas de 10 % (`IAudioEndpointVolume`, documenté), qui rétablit le son s'il était coupé |
+
+Vérifié dans le navigateur : panneau rapide, volume de 60 % à 70 %, texte agrandi. Le choix de la sortie son (télé, casque) reste à faire : Windows ne le propose pas par une interface documentée.
+
 ## Propositions de changement (à trancher par l'utilisateur)
 
 1. Livrer d'abord les 11 langues actuelles, puis les autres par la communauté (v4.4 demande toutes les langues de Windows avant la sortie).

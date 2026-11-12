@@ -361,3 +361,6 @@ guide-show = عرض طريقة الحل
 # Souris à la manette (à relire)
 pointer-tile = يد التحكم كفأرة
 pointer-hint = العصا اليسرى: تحريك · السفلي: نقر · الأيمن: نقر أيمن · العلوي: لوحة المفاتيح · الزر الأوسط: إنهاء
+vol-title = مستوى الصوت
+vol-down = أخفض
+vol-up = أعلى

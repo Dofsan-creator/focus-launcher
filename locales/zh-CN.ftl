@@ -333,3 +333,6 @@ guide-show = 查看解决方法
 # Souris à la manette (à relire)
 pointer-tile = 手柄当鼠标
 pointer-hint = 左摇杆：移动 · 下键：点击 · 右键：右击 · 上键：键盘 · 中间按键：结束
+vol-title = 音量
+vol-down = 调小
+vol-up = 调大

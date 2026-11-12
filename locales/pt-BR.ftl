@@ -341,3 +341,6 @@ guide-show = Ver como resolver
 # Souris à la manette (à relire)
 pointer-tile = Controle como mouse
 pointer-hint = Analógico esquerdo: mover · baixo: clicar · direita: clique direito · cima: teclado · botão central: terminar
+vol-title = Volume
+vol-down = Mais baixo
+vol-up = Mais alto

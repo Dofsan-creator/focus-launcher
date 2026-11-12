@@ -341,3 +341,6 @@ guide-show = So lässt es sich beheben
 # Souris à la manette (à relire)
 pointer-tile = Controller als Maus
 pointer-hint = Linker Stick: bewegen · unten: klicken · rechts: Rechtsklick · oben: Tastatur · mittlere Taste: fertig
+vol-title = Lautstärke
+vol-down = Leiser
+vol-up = Lauter

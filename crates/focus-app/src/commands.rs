@@ -872,6 +872,32 @@ pub fn power_action(app: AppHandle, state: Shared<'_>, console: State<'_, Consol
     Ok(())
 }
 
+/// Volume général, de 0 à 1.
+#[tauri::command(async)]
+pub fn master_volume() -> Option<f32> {
+    #[cfg(windows)]
+    return focus_sys::audio::master_volume().ok();
+    #[cfg(not(windows))]
+    None
+}
+
+/// Règle le volume général et renvoie le niveau obtenu.
+#[tauri::command(async)]
+pub fn set_master_volume(level: f32) -> Option<f32> {
+    #[cfg(windows)]
+    {
+        if let Err(err) = focus_sys::audio::set_master_volume(level) {
+            tracing::warn!("volume not changed: {err}");
+        }
+        focus_sys::audio::master_volume().ok()
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = level;
+        None
+    }
+}
+
 #[tauri::command]
 pub fn audio_sessions() -> Vec<(u32, f32)> {
     #[cfg(windows)]

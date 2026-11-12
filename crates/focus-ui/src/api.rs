@@ -35,14 +35,6 @@ impl Merged {
 
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Preview {
-    pub plan: focus_core::plan::Plan,
-    pub simulation: bool,
-    pub guardian: bool,
-}
-
-#[derive(Debug, Clone, PartialEq, Deserialize)]
-#[serde(rename_all = "camelCase")]
 pub struct SessionEnd {
     pub entry_id: String,
     pub title: String,
@@ -429,6 +421,7 @@ fn demo(command: &str, args: &Value) -> Value {
             "installs": [{ "id": "discord", "name": "Discord", "state": "running" }]
         }),
         "app_version" => json!("0.1.0"),
+        "master_volume" | "set_master_volume" => json!(args["level"].as_f64().unwrap_or(0.6)),
         "update_check" => json!({ "version": "0.2.0", "notes": "" }),
         "console_report" | "close_open_apps" => json!({
             "level": level, "shellStopped": true,

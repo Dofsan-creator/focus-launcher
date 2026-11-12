@@ -1,4 +1,4 @@
-//! Volume par application, à travers les sessions audio de Windows.
+//! Volume général et volume par application, à travers l'audio de Windows.
 
 use serde::Serialize;
 use windows::core::Interface;
@@ -70,4 +70,29 @@ pub fn set_volume(pid: u32, level: f32) -> windows::core::Result<()> {
             let _ = unsafe { volume.SetMasterVolume(level, std::ptr::null()) };
         }
     })
+}
+
+fn endpoint() -> windows::core::Result<windows::Win32::Media::Audio::Endpoints::IAudioEndpointVolume> {
+    // SAFETY: COM est initialisé sur ce fil ; les interfaces gèrent leur durée de vie.
+    unsafe {
+        let _ = CoInitializeEx(None, COINIT_APARTMENTTHREADED);
+        let enumerator: IMMDeviceEnumerator = CoCreateInstance(&MMDeviceEnumerator, None, CLSCTX_ALL)?;
+        enumerator.GetDefaultAudioEndpoint(eRender, eConsole)?.Activate(CLSCTX_ALL, None)
+    }
+}
+
+/// Volume général de la sortie son, de 0 à 1.
+pub fn master_volume() -> windows::core::Result<f32> {
+    // SAFETY: interface valide le temps de l'appel.
+    unsafe { endpoint()?.GetMasterVolumeLevelScalar() }
+}
+
+/// Règle le volume général, de 0 à 1. Le son est rétabli s'il était coupé.
+pub fn set_master_volume(level: f32) -> windows::core::Result<()> {
+    let volume = endpoint()?;
+    // SAFETY: interface valide le temps des appels ; aucun contexte d'événement.
+    unsafe {
+        volume.SetMasterVolumeLevelScalar(level.clamp(0.0, 1.0), std::ptr::null())?;
+        volume.SetMute(false, std::ptr::null())
+    }
 }

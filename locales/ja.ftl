@@ -333,3 +333,6 @@ guide-show = 直し方を見る
 # Souris à la manette (à relire)
 pointer-tile = コントローラーをマウスに
 pointer-hint = 左スティック：移動 · 下：クリック · 右：右クリック · 上：キーボード · 中央ボタン：終了
+vol-title = 音量
+vol-down = 小さく
+vol-up = 大きく

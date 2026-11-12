@@ -343,3 +343,6 @@ guide-show = See how to fix this
 # Souris à la manette (à relire)
 pointer-tile = Controller as mouse
 pointer-hint = Left stick: move · bottom: click · right: right-click · top: keyboard · center button: done
+vol-title = Volume
+vol-down = Quieter
+vol-up = Louder

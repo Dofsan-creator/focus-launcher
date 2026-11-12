@@ -42,6 +42,7 @@ fn markup(name: &str, level: u8) -> String {
                 r#"<rect x="3" y="8" width="16" height="8" rx="2"/><path d="M21 11v2"/><rect x="5" y="10" width="{width:.1}" height="4" rx="1" fill="currentColor" stroke="none"/>"#
             )
         }
+        "minus" => r#"<path d="M5 12h14"/>"#.into(),
         "pointer" => r#"<path d="M6 3.5l12.5 7.6-5.6 1.3 3.3 6.1-2.4 1.3-3.3-6.1-4.2 3.9z"/>"#.into(),
         "download" => r#"<path d="M12 4v10.5M7.5 10.2l4.5 4.5 4.5-4.5"/><path d="M5 19.5h14"/>"#.into(),
         "offline" => r#"<path d="M4 4l16 16"/><path d="M8.6 15.2a4.8 4.8 0 0 1 6.8 0M5.6 12.2a9 9 0 0 1 4.4-2.4M14.6 9.9a9 9 0 0 1 3.8 2.3"/>"#.into(),

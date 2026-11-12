@@ -171,6 +171,8 @@ pub fn run(launch: Launch) {
             commands::apply_console,
             commands::console_report,
             commands::pointer_mode,
+            commands::master_volume,
+            commands::set_master_volume,
             commands::close_open_apps,
             commands::downloads,
             commands::app_version,
