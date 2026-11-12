@@ -13,10 +13,15 @@
 </p>
 
 <p align="center">
+  <a href="#soutenir-le-projet"><img alt="Faire un don" src="https://img.shields.io/badge/%E2%9D%A4%20Faire%20un%20don-USDT-26a17b?style=for-the-badge"></a>
+</p>
+
+<p align="center">
   <a href="#installer">Installer</a> ·
   <a href="#ce-que-fait-focus">Ce que fait Focus</a> ·
   <a href="#tes-garanties">Tes garanties</a> ·
   <a href="#un-problème-">Un problème ?</a> ·
+  <a href="#soutenir-le-projet">Soutenir</a> ·
   <a href="#english">English</a>
 </p>
 
@@ -97,6 +102,22 @@ Focus est écrit entièrement en Rust : [Tauri 2](https://tauri.app) pour l'appl
 
 Les traductions sont le meilleur point d'entrée : une langue, c'est un fichier dans `locales/`, et un test vérifie qu'aucun texte ne manque. Les traductions marquées « à relire » attendent quelqu'un dont c'est la langue.
 
+## Soutenir le projet
+
+Focus est gratuit et le restera. Si tu veux aider son auteur à continuer, tu peux faire un don en **USDT sur le réseau BNB Smart Chain (BEP20)** :
+
+```text
+0xf8BA6B72f3ec51abf835Ed8510E1c2AF682ce7a6
+```
+
+<p align="center">
+  <img alt="QR code de l'adresse de don, USDT sur BNB Smart Chain" src="docs/don-usdt-bnb.jpeg" width="260">
+</p>
+
+> **Attention au réseau.** N'envoie que par **BNB Smart Chain (BEP20)**. Un envoi par un autre réseau (Ethereum, Tron…) serait perdu pour de bon.
+
+Tu n'as pas de cryptomonnaie ? Une étoile sur le dépôt, un signalement de problème ou une traduction relue aident tout autant.
+
 ## Licence
 
 [GPL-3.0 ou ultérieure](COPYING). Focus s'inspire du comportement des consoles, sans en reprendre l'apparence, les noms, les sons ni les icônes. Il n'est affilié à aucun constructeur ni à aucune boutique ; les marques citées appartiennent à leurs propriétaires.
@@ -113,5 +134,7 @@ Les traductions sont le meilleur point d'entrée : une langue, c'est un fichier 
 - Every change is written to disk before it happens and undone on exit, after a crash, or at the next start. Nothing is permanent, nothing is force-closed, and games are never touched.
 - Built-in signed updates, a downloads screen and a problem report that strips your name before it leaves your PC.
 - 11 languages, including right-to-left Arabic.
+
+**Support the project:** donations are welcome in USDT on **BNB Smart Chain (BEP20) only**, at `0xf8BA6B72f3ec51abf835Ed8510E1c2AF682ce7a6`. Funds sent over any other network would be lost.
 
 **Status: in development.** No stable release yet; open points are listed in [`AUDIT.md`](AUDIT.md). Written in Rust (Tauri 2 and Leptos). Licence: GPL-3.0-or-later.
