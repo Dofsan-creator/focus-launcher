@@ -241,6 +241,14 @@ Méthode : l'interface servie avec ses données de démonstration, pilotée au c
 
 Vérifié sans plantage ni erreur de console : assistant complet, accueil, rangée, pastille et écran du profil, question des applications, Téléchargements, Aide, effet plein écran du changement de profil.
 
+## 27. WebView2 n'est plus embarqué dans l'installeur (2026-11-12)
+
+| Point | Options | Choix |
+| --- | --- | --- |
+| WebView2 | Installeur hors ligne embarqué (décision 22, +210 Mo) ; amorce embarquée ; amorce téléchargée à l'installation | **Téléchargée seulement s'il manque.** Windows 11, exigé par Focus (SPEC D14), contient déjà WebView2 : rien n'est téléchargé dans le cas normal. L'installeur passe d'environ 212 Mo à quelques Mo, et chaque mise à jour depuis Focus aussi |
+| Déclencheur | — | Le DNS de la box de l'utilisateur ne résout pas `msedge.sf.dl.delivery.mp.microsoft.com`, que Tauri interroge pour embarquer WebView2 : l'installeur ne pouvait plus être construit sur ce PC |
+| Ce qu'on perd | — | Un Windows 11 sans WebView2 (supprimé à la main) et sans Internet ne pourra pas installer Focus. Cas jugé marginal |
+
 ## Propositions de changement (à trancher par l'utilisateur)
 
 1. Livrer d'abord les 11 langues actuelles, puis les autres par la communauté (v4.4 demande toutes les langues de Windows avant la sortie).

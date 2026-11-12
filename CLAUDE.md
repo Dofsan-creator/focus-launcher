@@ -19,7 +19,7 @@
 - Interface seule (navigateur, données de démonstration) : `cd crates/focus-ui && trunk serve`
 - Application : `cd crates/focus-app && cargo tauri dev`
 - Installeur : `cd crates/focus-app && cargo tauri build`, avec `TAURI_SIGNING_PRIVATE_KEY` (chemin de `~/.tauri/focus-launcher.key`, jamais dans le dépôt) et `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` vide : la mise à jour depuis Focus refuse un installeur non signé (décision 24)
-- Dépôt : https://github.com/Dofsan-creator/focus-launcher (public). Une version publiée doit contenir l'installeur, sa signature `.sig` et `latest.json`
+- Dépôt : https://github.com/Dofsan-creator/focus-launcher (public). Une version publiée doit contenir l'installeur, sa signature `.sig` et `latest.json`, avec l'installeur sous les deux clés `windows-x86_64` et `windows-x86_64-nsis` (le type d'installeur n'est pas toujours inscrit dans l'exécutable)
 
 ## Skills du projet (`.claude/skills/`)
 
