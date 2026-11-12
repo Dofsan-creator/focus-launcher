@@ -226,6 +226,21 @@ Essai fait avec l'utilisateur sur l'exécutable publié. Vu au journal : bureau 
 | Journal bloqué par des programmes que Windows refuse d'ouvrir | — | Rien à rendre à un programme qu'on n'a pas pu ralentir |
 | Installeur | Aspect par défaut ; images de Focus | Bandeau et panneau latéral dessinés pour Focus, icône de Focus |
 
+## 26. Tests dans le navigateur (2026-11-12)
+
+Méthode : l'interface servie avec ses données de démonstration, pilotée au clavier dans une fenêtre Edge par `agent-desktop` (arbre d'accessibilité de Windows), puis par le protocole de débogage d'un Edge sans fenêtre pour lire la console et capturer chaque étape. La démonstration suit désormais le niveau choisi, et `?accueil` dans l'adresse saute l'assistant.
+
+| Constat | Correction |
+| --- | --- |
+| Dans l'assistant, la flèche du bas allait sur « Retour » au lieu de « Suivant » : un appui de trop faisait reculer | En changeant de rangée, la navigation va sur le bouton principal de la rangée |
+| Le bouton « Jouer » n'avait pas d'anneau de focus (son halo l'écrasait) | Anneau ajouté au halo |
+| Blocs collés sur les écrans Profil, Téléchargements, Aide | Espacement commun des écrans |
+| Au démarrage, l'annonce du profil et la question sur les applications se chevauchaient, puis le tutoriel Steam s'enchaînait | Une chose à la fois : la question attend la fin de l'annonce ; le tutoriel attend l'accueil et ne revient qu'une fois par semaine |
+| Textes de l'ancien mode console (confirmation des performances, assistant, paramètres) | Réécrits dans les 11 langues ; l'interrupteur « Masquer complètement le bureau » ajouté à l'assistant |
+| Non corrigé : les applications ouvertes s'affichent sous leur nom technique (« chrome · notepad ») | À faire : lire le nom du programme dans l'exécutable |
+
+Vérifié sans plantage ni erreur de console : assistant complet, accueil, rangée, pastille et écran du profil, question des applications, Téléchargements, Aide, effet plein écran du changement de profil.
+
 ## Propositions de changement (à trancher par l'utilisateur)
 
 1. Livrer d'abord les 11 langues actuelles, puis les autres par la communauté (v4.4 demande toutes les langues de Windows avant la sortie).

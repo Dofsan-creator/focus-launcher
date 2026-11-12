@@ -304,6 +304,23 @@ impl Default for Settings {
     }
 }
 
+/// Hors de l'application (navigateur) : les données de démonstration répondent.
+pub fn is_demo() -> bool {
+    tauri().is_none()
+}
+
+thread_local! {
+    /// Niveau d'optimisation choisi dans la démonstration, pour que le bilan le suive.
+    static DEMO_LEVEL: std::cell::RefCell<String> = std::cell::RefCell::new("max".to_owned());
+}
+
+/// `?accueil` dans l'adresse : la démonstration saute l'assistant du premier démarrage.
+fn demo_skips_setup() -> bool {
+    web_sys::window()
+        .and_then(|w| w.location().search().ok())
+        .is_some_and(|search| search.contains("accueil"))
+}
+
 fn tauri() -> Option<JsValue> {
     let window = web_sys::window()?;
     let value = Reflect::get(&window, &"__TAURI__".into()).ok()?;
@@ -313,7 +330,7 @@ fn tauri() -> Option<JsValue> {
 /// Appelle une commande.
 pub async fn invoke<T: DeserializeOwned>(command: &str, args: Value) -> Result<T, String> {
     let Some(tauri) = tauri() else {
-        return serde_json::from_value(demo(command)).map_err(|e| e.to_string());
+        return serde_json::from_value(demo(command, &args)).map_err(|e| e.to_string());
     };
     let core = Reflect::get(&tauri, &"core".into()).map_err(|_| "no core".to_owned())?;
     let invoke = Reflect::get(&core, &"invoke".into()).map_err(|_| "no invoke".to_owned())?;
@@ -360,13 +377,22 @@ fn demo_entry(id: &str, title: &str, kind: &str, store: &str, hours: u64, last: 
     }, "alternates": [], "art": { "accent": null } })
 }
 
-fn demo(command: &str) -> Value {
+fn demo(command: &str, args: &Value) -> Value {
+    if command == "set_settings" {
+        if let Some(level) = args["settings"]["optimization"].as_str() {
+            DEMO_LEVEL.with(|cell| *cell.borrow_mut() = level.to_owned());
+        }
+    }
+    let level = DEMO_LEVEL.with(|cell| cell.borrow().clone());
     match command {
         "boot_info" => json!({ "autostartDisabled": false }),
         "get_settings" => serde_json::to_value(Settings {
             sounds: false,
             music: false,
-            reduce_motion: true,
+            reduce_motion: !demo_skips_setup(),
+            first_run_done: demo_skips_setup(),
+            language: demo_skips_setup().then(|| "fr".to_owned()),
+            optimization: level,
             ..Settings::default()
         })
         .unwrap_or_default(),
@@ -405,8 +431,9 @@ fn demo(command: &str) -> Value {
         "app_version" => json!("0.1.0"),
         "update_check" => json!({ "version": "0.2.0", "notes": "" }),
         "console_report" | "close_open_apps" => json!({
-            "level": "max", "shellStopped": true,
-            "powerBefore": "381b4222f69441f09685ff5bb260df2e", "powerAfter": POWER_HIGH,
+            "level": level, "shellStopped": true,
+            "powerBefore": "381b4222f69441f09685ff5bb260df2e",
+            "powerAfter": if level == "off" { "381b4222f69441f09685ff5bb260df2e" } else { POWER_HIGH },
             "memoryTotal": 34359738368_u64, "memoryBefore": 19756849562_u64, "memoryAfter": 22011707392_u64,
             "slowed": 31, "closed": 4, "paused": 7, "trimmed": 58, "failed": 0,
             "apps": if command == "console_report" { json!(["chrome", "notepad"]) } else { json!([]) },

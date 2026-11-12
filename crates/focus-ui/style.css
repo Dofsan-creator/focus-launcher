@@ -96,6 +96,10 @@ img { user-select: none; }
   box-shadow: 0 12px 34px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 .f.play .icon { width: 1.05em; height: 1.05em; }
+/* Le bouton Jouer garde son halo, et reçoit en plus l'anneau du focus. */
+.f.play:focus, .f.play:focus-visible {
+  box-shadow: 0 0 0 3px var(--text), 0 0 0 8px color-mix(in srgb, var(--accent) 45%, transparent), 0 12px 34px color-mix(in srgb, var(--accent) 35%, transparent);
+}
 
 /* Fond : deux couches qui se relaient en fondu, et un voile pour la lisibilité. */
 .backdrop { position: fixed; inset: 0; z-index: 0; overflow: hidden; background: var(--bg); }
@@ -135,6 +139,10 @@ img { user-select: none; }
 @keyframes screen-in { from { opacity: 0; transform: translateY(12px); } }
 @keyframes fade-in { from { opacity: 0; } }
 .sheet-screen > * { max-width: 1100px; }
+/* Les blocs d'un écran respirent : jamais deux cartes collées. */
+.sheet-screen { gap: 14px; }
+.sheet-screen > h1, .sheet-screen > h2, .sheet-screen > p { margin-bottom: 0; }
+.sheet-screen > .row:last-child { margin-top: 8px; }
 
 /* Accueil */
 .home { overflow: hidden; padding-bottom: clamp(60px, 9vh, 110px); }

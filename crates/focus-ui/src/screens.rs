@@ -1089,7 +1089,7 @@ pub fn OptimizationChoice() -> impl IntoView {
                     if level == "off" {
                         ctx.update_settings(|s| s.optimization = level.to_owned());
                         // Le PC change de profil tout de suite, et l'écran le montre.
-                        apply_console();
+                        apply_console(ctx);
                     } else if current() != level {
                         pending.set(Some(level));
                         ctx.dialog_open.set(true);
@@ -1108,7 +1108,7 @@ pub fn OptimizationChoice() -> impl IntoView {
                 on_yes=Callback::new(move |_| {
                     if let Some(level) = pending.get_untracked() {
                         ctx.update_settings(|s| s.optimization = level.to_owned());
-                        apply_console();
+                        apply_console(ctx);
                     }
                     pending.set(None);
                     ctx.back();
@@ -1117,10 +1117,16 @@ pub fn OptimizationChoice() -> impl IntoView {
     }
 }
 
-/// Après un changement du mode console, Windows suit tout de suite.
-pub fn apply_console() {
+/// Après un changement du mode console, Windows suit tout de suite. Le bilan arrive
+/// ensuite par l'événement `console-report` ; hors de l'application (navigateur,
+/// démonstration), il est relu directement pour que l'effet se voie aussi.
+pub fn apply_console(ctx: Ctx) {
     spawn_local(async move {
         let _ = invoke::<Value>("apply_console", json!({})).await;
+        if crate::api::is_demo() {
+            let report = invoke::<Option<ConsoleReport>>("console_report", json!({})).await.ok().flatten();
+            crate::app::show_profile(ctx, report);
+        }
     });
 }
 
@@ -1149,7 +1155,7 @@ fn SettingsScreen() -> impl IntoView {
             <Toggle label=label value=Signal::derive(move || ctx.settings.with(|s| s.as_ref().is_some_and(read)))
                 on_change=Callback::new(move |_| {
                     ctx.update_settings(write);
-                    apply_console();
+                    apply_console(ctx);
                 })/>
         }
     };

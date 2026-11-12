@@ -108,6 +108,28 @@ thread_local! {
     static APPS_ASKED: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
 }
 
+/// Le tutoriel du bouton central ne revient qu'une fois par semaine : « Plus tard »
+/// ne doit pas devenir une question à chaque ouverture. Il reste dans les paramètres.
+const GUIDE_KEY: &str = "focus-guide-shown";
+const GUIDE_EVERY_MS: f64 = 7.0 * 24.0 * 3600.0 * 1000.0;
+
+fn local_storage() -> Option<web_sys::Storage> {
+    web_sys::window()?.local_storage().ok().flatten()
+}
+
+fn guide_shown_recently() -> bool {
+    local_storage()
+        .and_then(|storage| storage.get_item(GUIDE_KEY).ok().flatten())
+        .and_then(|value| value.parse::<f64>().ok())
+        .is_some_and(|shown| js_sys::Date::now() - shown < GUIDE_EVERY_MS)
+}
+
+fn remember_guide_shown() {
+    if let Some(storage) = local_storage() {
+        let _ = storage.set_item(GUIDE_KEY, &js_sys::Date::now().to_string());
+    }
+}
+
 /// Durée de l'animation de démarrage (voir `.boot` dans `style.css`), en millisecondes.
 const BOOT_MS: f64 = 5600.0;
 
@@ -123,9 +145,9 @@ pub fn show_profile(ctx: Ctx, report: Option<ConsoleReport>) {
     if let Some(root) = web_sys::window().and_then(|w| w.document()).and_then(|d| d.document_element()) {
         let _ = root.set_attribute("data-level", level_now.as_deref().unwrap_or("none"));
     }
-    let Some(report) = report.filter(|_| changed) else {
+    if report.is_none() || !changed {
         return;
-    };
+    }
     let wait = (BOOT_MS - (js_sys::Date::now() - STARTED.get())).max(0.0);
     set_timeout(
         move || {
@@ -138,16 +160,24 @@ pub fn show_profile(ctx: Ctx, report: Option<ConsoleReport>) {
                 set_timeout(move || ctx.fx.set(None), Duration::from_millis(2400));
             }
             ctx.flash.set(true);
-            set_timeout(move || ctx.flash.set(false), Duration::from_secs(7));
-            let quiet = on_home(ctx)
-                && !ctx.dialog_open.get_untracked()
-                && ctx.launching.with_untracked(Option::is_none)
-                && ctx.running.with_untracked(Option::is_none);
-            if !report.apps.is_empty() && quiet && !APPS_ASKED.replace(true) {
-                ctx.apps_ask.set(true);
-                ctx.dialog_open.set(true);
-                after_render(nav::focus_first);
-            }
+            // Une chose à la fois : la question sur les applications ouvertes attend
+            // que l'annonce soit repartie (elles se chevauchaient, vu dans le navigateur).
+            set_timeout(
+                move || {
+                    ctx.flash.set(false);
+                    let quiet = on_home(ctx)
+                        && !ctx.dialog_open.get_untracked()
+                        && ctx.launching.with_untracked(Option::is_none)
+                        && ctx.running.with_untracked(Option::is_none);
+                    let apps = ctx.profile.with_untracked(|known| known.as_ref().is_some_and(|known| !known.apps.is_empty()));
+                    if apps && quiet && !APPS_ASKED.replace(true) {
+                        ctx.apps_ask.set(true);
+                        ctx.dialog_open.set(true);
+                        after_render(nav::focus_first);
+                    }
+                },
+                Duration::from_secs(7),
+            );
         },
         Duration::from_millis(wait as u64),
     );
@@ -795,10 +825,19 @@ pub fn App() -> impl IntoView {
         }
     });
     // Steam capte encore le bouton central ? Le tutoriel s'ouvre une fois, sur l'accueil.
+    // Au premier démarrage, l'assistant passe d'abord : on attend que l'accueil soit
+    // là, calme (aucun dialogue, aucun jeu), pendant au plus une demi-heure.
     spawn_local(async move {
         wait_ms(BOOT_MS as i32 + 9000).await;
+        let quiet = move || on_home(ctx) && !ctx.dialog_open.get_untracked() && ctx.running.with_untracked(Option::is_none);
+        let mut waited = 0;
+        while !quiet() && waited < 900 {
+            wait_ms(2000).await;
+            waited += 1;
+        }
         let grabbed = invoke::<Option<bool>>("steam_guide_status", json!({})).await.ok().flatten() == Some(true);
-        if grabbed && on_home(ctx) && !ctx.dialog_open.get_untracked() && ctx.running.with_untracked(Option::is_none) {
+        if grabbed && quiet() && !guide_shown_recently() {
+            remember_guide_shown();
             ctx.guide_ask.set(true);
             ctx.dialog_open.set(true);
             after_render(nav::focus_first);

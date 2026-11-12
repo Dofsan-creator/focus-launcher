@@ -54,6 +54,7 @@ fn console_step(ctx: Ctx) -> AnyView {
     view! {
         <div class="stack">
             {crate::setting_toggle!(ctx, "set-console", console_mode)}
+            {crate::setting_toggle!(ctx, "set-stop-shell", stop_shell)}
             {crate::setting_toggle!(ctx, "set-hide-taskbar", hide_taskbar)}
             {crate::setting_toggle!(ctx, "set-silence", silence_notifications)}
         </div>

@@ -85,11 +85,37 @@ pub fn move_focus(direction: Direction) -> bool {
     let rects: Vec<Rect> = elements.iter().map(rect_of).collect();
     match spatial::next(&rects, current, direction) {
         Some(index) => {
+            let index = primary_in_row(&elements, &rects, current, index, direction).unwrap_or(index);
             focus(&elements[index]);
             true
         }
         None => false,
     }
+}
+
+/// En montant ou en descendant vers une autre rangée, le bouton principal de cette
+/// rangée (« Suivant », « Commencer », « Jouer »…) passe avant le plus proche : sans
+/// cela, la flèche du bas tombait sur « Retour » et un appui de trop faisait reculer.
+fn primary_in_row(
+    elements: &[HtmlElement],
+    rects: &[Rect],
+    current: usize,
+    target: usize,
+    direction: Direction,
+) -> Option<usize> {
+    if !matches!(direction, Direction::Up | Direction::Down) {
+        return None;
+    }
+    let row = rects[target];
+    let same_row = |rect: &Rect| rect.y < row.y + row.h && row.y < rect.y + rect.h;
+    // Déjà dans cette rangée : on se déplace normalement.
+    if same_row(&rects[current]) {
+        return None;
+    }
+    elements.iter().enumerate().find_map(|(index, element)| {
+        let primary = element.class_list().contains("primary") || element.class_list().contains("play");
+        (index != target && primary && same_row(&rects[index])).then_some(index)
+    })
 }
 
 /// Valide l'élément actif.

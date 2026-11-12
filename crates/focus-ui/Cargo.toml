@@ -23,7 +23,7 @@ features = [
     "BiquadFilterNode", "BiquadFilterType", "ConvolverNode", "OscillatorType",
     "Document", "DomRect", "Element", "HtmlElement", "KeyboardEvent", "MouseEvent",
     "Navigator", "NodeList", "OscillatorNode", "GainNode", "ScrollIntoViewOptions",
-    "ScrollLogicalPosition", "Window", "CssStyleDeclaration", "DomTokenList", "console",
+    "ScrollLogicalPosition", "Window", "Location", "Storage", "CssStyleDeclaration", "DomTokenList", "console",
 ]
 
 [lints]
