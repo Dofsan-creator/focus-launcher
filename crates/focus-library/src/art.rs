@@ -368,11 +368,132 @@ pub fn read_info(dir: &Path) -> ArtInfo {
     info
 }
 
+// ---- Magasin Steam : images publiques, sans clé ----
+
+/// Serveur des images du magasin Steam.
+const STEAM_ASSETS: &str = "https://shared.akamai.steamstatic.com/store_item_assets/";
+
+/// Titre ramené à ses lettres et chiffres, en minuscules : « Battlefield™ 6 » et
+/// « battlefield 6 » se comparent égaux.
+pub fn title_key(title: &str) -> String {
+    title.chars().filter(|c| c.is_alphanumeric()).flat_map(char::to_lowercase).collect()
+}
+
+/// Adresse de la recherche publique du magasin Steam.
+pub fn steam_search_url(title: &str) -> String {
+    format!(
+        "https://store.steampowered.com/api/storesearch/?term={}&l=english&cc=US",
+        focus_core::report::encode(title)
+    )
+}
+
+#[derive(Deserialize)]
+struct SearchResult {
+    #[serde(default)]
+    items: Vec<SearchItem>,
+}
+
+#[derive(Deserialize)]
+struct SearchItem {
+    id: u64,
+    name: String,
+}
+
+/// Identifiant Steam du jeu qui porte exactement ce titre. Un titre seulement
+/// proche ne compte pas : mieux vaut pas de jaquette qu'une jaquette d'un autre jeu.
+pub fn steam_search_match(json: &str, title: &str) -> Option<u64> {
+    let wanted = title_key(title);
+    if wanted.is_empty() {
+        return None;
+    }
+    let result: SearchResult = serde_json::from_str(json).ok()?;
+    result.items.into_iter().find(|item| title_key(&item.name) == wanted).map(|item| item.id)
+}
+
+/// Adresse du service public qui donne les chemins des images d'un jeu.
+pub fn steam_items_url(appid: u64) -> String {
+    let query = format!(
+        r#"{{"ids":[{{"appid":{appid}}}],"context":{{"language":"english","country_code":"US"}},"data_request":{{"include_assets":true}}}}"#
+    );
+    format!(
+        "https://api.steampowered.com/IStoreBrowseService/GetItems/v1/?input_json={}",
+        focus_core::report::encode(&query)
+    )
+}
+
+/// Images d'un jeu d'après la réponse du magasin : jaquette verticale, fond, logo.
+/// Les jeux récents rangent chaque image dans un dossier propre à sa version :
+/// seul ce chemin est fiable, l'ancien renvoie une image vide.
+pub fn steam_store_sources(json: &str) -> Sources {
+    let parsed: serde_json::Value = serde_json::from_str(json).unwrap_or_default();
+    let assets = &parsed["response"]["store_items"][0]["assets"];
+    let Some(format) = assets["asset_url_format"].as_str() else {
+        return Sources::default();
+    };
+    let url = |keys: &[&str]| -> Option<Source> {
+        let file = keys.iter().find_map(|key| assets[*key].as_str())?;
+        Some(Source::Url(format!("{STEAM_ASSETS}{}", format.replace("${FILENAME}", file))))
+    };
+    Sources {
+        cover: url(&["library_capsule_2x", "library_capsule"]),
+        hero: url(&["library_hero", "library_hero_2x"]),
+        logo: url(&["library_logo", "library_logo_2x"]),
+    }
+}
+
+/// Complète des sources : ce qui manque est pris dans `extra`.
+pub fn fill_missing(sources: &mut Sources, extra: Sources) {
+    sources.cover = sources.cover.take().or(extra.cover);
+    sources.hero = sources.hero.take().or(extra.hero);
+    sources.logo = sources.logo.take().or(extra.logo);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use image::{Rgb, RgbImage};
     use tempfile::tempdir;
+
+    #[test]
+    fn steam_search_should_only_accept_the_exact_title() {
+        let json = r#"{"total":2,"items":[
+            {"type":"app","name":"Battlefield™ 6","id":2807960},
+            {"type":"app","name":"Battlefield™ 2042","id":1517290}]}"#;
+        assert_eq!(steam_search_match(json, "Battlefield 6"), Some(2807960));
+        assert_eq!(steam_search_match(json, "Battlefield"), None);
+        assert_eq!(steam_search_match("not json", "Battlefield 6"), None);
+        assert_eq!(steam_search_match(json, "™"), None);
+    }
+
+    #[test]
+    fn steam_store_sources_should_use_the_versioned_paths() {
+        let json = r#"{"response":{"store_items":[{"appid":3513350,"assets":{
+            "asset_url_format":"steam/apps/3513350/${FILENAME}?t=1",
+            "library_capsule":"aa/library_capsule.jpg","library_capsule_2x":"bb/library_capsule_2x.jpg",
+            "library_hero":"cc/library_hero.jpg"}}]}}"#;
+        let sources = steam_store_sources(json);
+        assert_eq!(
+            sources.cover,
+            Some(Source::Url(
+                "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3513350/bb/library_capsule_2x.jpg?t=1".into()
+            ))
+        );
+        assert!(matches!(sources.hero, Some(Source::Url(ref url)) if url.contains("cc/library_hero.jpg")));
+        assert_eq!(sources.logo, None);
+        assert_eq!(steam_store_sources("{}"), Sources::default());
+    }
+
+    #[test]
+    fn filling_should_keep_what_is_already_found() {
+        let mut sources = Sources { cover: Some(Source::File("local.jpg".into())), ..Sources::default() };
+        fill_missing(&mut sources, Sources {
+            cover: Some(Source::Url("https://x/cover".into())),
+            hero: Some(Source::Url("https://x/hero".into())),
+            logo: None,
+        });
+        assert_eq!(sources.cover, Some(Source::File("local.jpg".into())));
+        assert_eq!(sources.hero, Some(Source::Url("https://x/hero".into())));
+    }
 
     type TestResult = Result<(), Box<dyn std::error::Error>>;
 

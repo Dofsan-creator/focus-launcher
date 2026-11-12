@@ -4,7 +4,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Version du format du cache : la changer force un nouveau calcul.
-pub const ART_VERSION: u32 = 2;
+pub const ART_VERSION: u32 = 3;
 
 /// Sorte d'image.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]

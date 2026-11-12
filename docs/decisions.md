@@ -273,6 +273,18 @@ Logique pure dans `focus-input::pointer` (7 tests), envoi dans `focus-sys::point
 
 Vérifié dans le navigateur : panneau rapide, volume de 60 % à 70 %, texte agrandi. Le choix de la sortie son (télé, casque) reste à faire : Windows ne le propose pas par une interface documentée.
 
+## 30. Jaquettes sans clé par le magasin public de Steam (2026-11-12)
+
+| Point | Options | Choix |
+| --- | --- | --- |
+| Source | SteamGridDB (clé personnelle) ; IGDB (compte) ; magasin public de Steam | **Magasin public de Steam** : recherche par titre, puis chemins d'images par son service public. Aucune clé, aucun compte |
+| Pour qui | — | Tout jeu sans jaquette : ajouté à la main, autre boutique, ou jeu Steam dont le cache local est incomplet |
+| Justesse | Titre approché ; titre exact | **Titre exact** (lettres et chiffres seulement, « Battlefield™ 6 » = « Battlefield 6 ») : pas de jaquette plutôt qu'une jaquette d'un autre jeu |
+| Chemins | Ancien chemin fixe ; chemin versionné | **Versionné** : pour les jeux récents, l'ancien chemin renvoie une image vide (vu pour Battlefield 6 et Wuthering Waves) |
+| Vie privée | — | Seul le titre du jeu part vers Steam, en HTTPS, vers trois hôtes listés dans le code |
+
+Vérifié en vrai : la jaquette de Wuthering Waves est trouvée par son titre et téléchargée (test ponctuel `steam_store`). Le cache des images est recalculé une fois (version 3).
+
 ## Propositions de changement (à trancher par l'utilisateur)
 
 1. Livrer d'abord les 11 langues actuelles, puis les autres par la communauté (v4.4 demande toutes les langues de Windows avant la sortie).

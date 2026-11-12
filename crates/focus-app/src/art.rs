@@ -6,7 +6,7 @@
 
 use crate::runtime::App;
 use focus_core::art::{art_key, is_valid_key, ArtInfo, ArtKind, ART_VERSION};
-use focus_core::model::{Entry, LaunchTarget, Store};
+use focus_core::model::{Entry, EntryKind, LaunchTarget, Store};
 use focus_library::art::{self as library_art, Meta, Source, Sources};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -14,12 +14,16 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 use tauri::{AppHandle, Emitter};
 
-/// Hôtes d'images autorisés : les CDN d'Epic, rien d'autre.
+/// Hôtes autorisés : les CDN d'Epic, et le magasin public de Steam (recherche par
+/// titre et images), rien d'autre. Aucune clé, aucun compte.
 #[cfg(windows)]
 const IMAGE_HOSTS: &[&str] = &[
     "cdn1.epicgames.com",
     "cdn2.unrealengine.com",
     "cdn1.unrealengine.com",
+    "store.steampowered.com",
+    "api.steampowered.com",
+    "shared.akamai.steamstatic.com",
 ];
 #[cfg(windows)]
 const MAX_IMAGE_BYTES: u32 = 12 * 1024 * 1024;
@@ -61,6 +65,28 @@ fn sources_for(entry: &Entry, steam: Option<&Path>, epic: &HashMap<String, Sourc
             .unwrap_or_default(),
         _ => Sources::default(),
     }
+}
+
+/// Images publiques du magasin Steam pour un jeu qui n'en a pas : par son identifiant
+/// pour un jeu Steam, sinon par son titre exact. Seul le titre du jeu est envoyé.
+#[cfg(windows)]
+fn steam_store(entry: &Entry) -> Option<Sources> {
+    let text = |url: &str| -> Option<String> {
+        focus_sys::http::download(url, IMAGE_HOSTS, MAX_IMAGE_BYTES)
+            .map(|bytes| String::from_utf8_lossy(&bytes).into_owned())
+            .map_err(|err| tracing::warn!("steam store not reached: {err}"))
+            .ok()
+    };
+    let appid = match entry.id.strip_prefix("steam:") {
+        Some(appid) => appid.parse().ok()?,
+        None => library_art::steam_search_match(&text(&library_art::steam_search_url(&entry.title))?, &entry.title)?,
+    };
+    Some(library_art::steam_store_sources(&text(&library_art::steam_items_url(appid))?))
+}
+
+#[cfg(not(windows))]
+fn steam_store(_entry: &Entry) -> Option<Sources> {
+    None
 }
 
 /// Fichier dont on lit l'icône : la cible directe, sinon l'exécutable le plus
@@ -118,7 +144,14 @@ fn prepare(data: &Path, entry: &Entry, steam: Option<&Path>, epic: &HashMap<Stri
     if std::fs::create_dir_all(&dir).is_err() {
         return false;
     }
-    let sources = sources_for(entry, steam, epic);
+    let mut sources = sources_for(entry, steam, epic);
+    // Jeu sans jaquette (ajouté à la main, autre boutique, cache Steam incomplet) :
+    // le magasin public de Steam la fournit souvent.
+    if sources.cover.is_none() && entry.kind == EntryKind::Game {
+        if let Some(extra) = steam_store(entry) {
+            library_art::fill_missing(&mut sources, extra);
+        }
+    }
     let mut info = ArtInfo {
         version: ART_VERSION,
         ..ArtInfo::default()
@@ -265,5 +298,31 @@ mod tests {
             assert_ne!(respond(data.path(), hostile).status(), 200, "{hostile}");
         }
         Ok(())
+    }
+}
+
+#[cfg(all(test, windows))]
+mod live_tests {
+    use super::*;
+    use focus_core::model::Stats;
+
+    /// Interroge le vrai magasin Steam : `cargo test -p focus-app -- --ignored steam_store`.
+    #[test]
+    #[ignore = "needs the network"]
+    fn steam_store_should_find_a_manual_game_by_its_title() {
+        let entry = Entry {
+            id: "manual:test".to_owned(),
+            title: "Wuthering Waves".to_owned(),
+            kind: EntryKind::Game,
+            store: Store::Manual,
+            target: LaunchTarget::Protocol { uri: String::new() },
+            install_dir: None,
+            cover: None,
+            favorite: false,
+            stats: Stats::default(),
+        };
+        let sources = steam_store(&entry).expect("store reached");
+        let cover = sources.cover.and_then(|source| fetch(&source)).expect("cover downloaded");
+        assert!(cover.len() > 50_000, "a real cover, not a placeholder ({} bytes)", cover.len());
     }
 }
