@@ -309,7 +309,7 @@ mod live_tests {
     /// Interroge le vrai magasin Steam : `cargo test -p focus-app -- --ignored steam_store`.
     #[test]
     #[ignore = "needs the network"]
-    fn steam_store_should_find_a_manual_game_by_its_title() {
+    fn steam_store_should_find_a_manual_game_by_its_title() -> Result<(), String> {
         let entry = Entry {
             id: "manual:test".to_owned(),
             title: "Wuthering Waves".to_owned(),
@@ -321,8 +321,9 @@ mod live_tests {
             favorite: false,
             stats: Stats::default(),
         };
-        let sources = steam_store(&entry).expect("store reached");
-        let cover = sources.cover.and_then(|source| fetch(&source)).expect("cover downloaded");
+        let sources = steam_store(&entry).ok_or("store not reached")?;
+        let cover = sources.cover.and_then(|source| fetch(&source)).ok_or("cover not downloaded")?;
         assert!(cover.len() > 50_000, "a real cover, not a placeholder ({} bytes)", cover.len());
+        Ok(())
     }
 }
