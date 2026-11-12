@@ -237,7 +237,7 @@ Méthode : l'interface servie avec ses données de démonstration, pilotée au c
 | Blocs collés sur les écrans Profil, Téléchargements, Aide | Espacement commun des écrans |
 | Au démarrage, l'annonce du profil et la question sur les applications se chevauchaient, puis le tutoriel Steam s'enchaînait | Une chose à la fois : la question attend la fin de l'annonce ; le tutoriel attend l'accueil et ne revient qu'une fois par semaine |
 | Textes de l'ancien mode console (confirmation des performances, assistant, paramètres) | Réécrits dans les 11 langues ; l'interrupteur « Masquer complètement le bureau » ajouté à l'assistant |
-| Non corrigé : les applications ouvertes s'affichent sous leur nom technique (« chrome · notepad ») | À faire : lire le nom du programme dans l'exécutable |
+| Les applications ouvertes s'affichaient sous leur nom technique (« chrome · notepad ») | Nom lu dans la description de l'exécutable (« Google Chrome », « Bloc-notes »), sans ouvrir le processus |
 
 Vérifié sans plantage ni erreur de console : assistant complet, accueil, rangée, pastille et écran du profil, question des applications, Téléchargements, Aide, effet plein écran du changement de profil.
 

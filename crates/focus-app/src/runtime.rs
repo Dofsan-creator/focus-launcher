@@ -169,8 +169,21 @@ fn console_entry() -> Entry {
 }
 
 /// Noms des applications ouvertes, une ligne par programme.
+/// Le nom lisible du programme (« Google Chrome ») plutôt que celui de son fichier.
 fn app_names(apps: &[focus_core::model::ProcessInfo]) -> Vec<String> {
-    let mut names: Vec<String> = apps.iter().map(|process| process.name.clone()).collect();
+    let readable = |process: &focus_core::model::ProcessInfo| -> Option<String> {
+        #[cfg(windows)]
+        return process.path.as_deref().and_then(focus_sys::scan::display_name);
+        #[cfg(not(windows))]
+        {
+            let _ = process;
+            None
+        }
+    };
+    let mut names: Vec<String> = apps
+        .iter()
+        .map(|process| readable(process).unwrap_or_else(|| process.name.clone()))
+        .collect();
     names.sort();
     names.dedup();
     names

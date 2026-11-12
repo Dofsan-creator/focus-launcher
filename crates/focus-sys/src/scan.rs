@@ -280,3 +280,58 @@ pub fn processes_in_dir(dir: &str) -> Vec<ProcessInfo> {
         })
         .collect()
 }
+
+/// Nom lisible d'un programme (« Google Chrome », « Bloc-notes »), lu dans la
+/// description de son exécutable. Lecture du fichier seulement : aucun processus
+/// n'est ouvert. `None` si l'exécutable n'en a pas.
+pub fn display_name(path: &str) -> Option<String> {
+    use std::ffi::c_void;
+    use windows::Win32::Storage::FileSystem::{GetFileVersionInfoSizeW, GetFileVersionInfoW, VerQueryValueW};
+    let file = crate::wide::wide(path);
+    // SAFETY: tampons locaux de la taille annoncée par Windows ; les pointeurs rendus
+    // par `VerQueryValueW` désignent l'intérieur de `data`, vivant pendant la lecture.
+    unsafe {
+        let size = GetFileVersionInfoSizeW(PCWSTR(file.as_ptr()), None);
+        if size == 0 {
+            return None;
+        }
+        let mut data = vec![0_u8; size as usize];
+        GetFileVersionInfoW(PCWSTR(file.as_ptr()), 0, size, data.as_mut_ptr().cast()).ok()?;
+        let query = |key: &str| -> Option<(*const c_void, u32)> {
+            let key = crate::wide::wide(key);
+            let mut pointer: *mut c_void = std::ptr::null_mut();
+            let mut length = 0_u32;
+            VerQueryValueW(data.as_ptr().cast(), PCWSTR(key.as_ptr()), &mut pointer, &mut length)
+                .as_bool()
+                .then_some((pointer.cast_const(), length))
+                .filter(|(pointer, length)| !pointer.is_null() && *length > 0)
+        };
+        let (translation, length) = query(r"\VarFileInfo\Translation")?;
+        if length < 4 {
+            return None;
+        }
+        let language = *translation.cast::<u16>();
+        let codepage = *translation.cast::<u16>().add(1);
+        let (text, length) = query(&format!(r"\StringFileInfo\{language:04x}{codepage:04x}\FileDescription"))?;
+        let chars = std::slice::from_raw_parts(text.cast::<u16>(), length as usize);
+        let name = String::from_utf16_lossy(chars).trim_end_matches('\0').trim().to_owned();
+        (!name.is_empty()).then_some(name)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::display_name;
+
+    #[test]
+    fn windows_program_should_have_a_readable_name() {
+        let root = std::env::var("SystemRoot").unwrap_or_else(|_| r"C:\Windows".to_owned());
+        let name = display_name(&format!(r"{root}\System32\notepad.exe"));
+        assert!(name.is_some_and(|name| !name.eq_ignore_ascii_case("notepad")));
+    }
+
+    #[test]
+    fn missing_file_should_have_no_name() {
+        assert_eq!(display_name(r"Z:\nowhere\none.exe"), None);
+    }
+}
