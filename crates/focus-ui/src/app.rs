@@ -437,6 +437,8 @@ fn apply_appearance(settings: &Settings) {
     else {
         return;
     };
+    let _ = root.set_attribute("data-text", if settings.large_text { "large" } else { "normal" });
+    let _ = root.set_attribute("data-contrast", if settings.high_contrast { "high" } else { "normal" });
     let _ = root.set_attribute(
         "data-motion",
         if settings.reduce_motion {

@@ -336,3 +336,5 @@ pointer-hint = 왼쪽 스틱: 이동 · 아래: 클릭 · 오른쪽: 오른쪽 �
 vol-title = 음량
 vol-down = 작게
 vol-up = 크게
+set-large-text = 큰 글자
+set-high-contrast = 고대비

@@ -344,3 +344,5 @@ pointer-hint = Analógico esquerdo: mover · baixo: clicar · direita: clique di
 vol-title = Volume
 vol-down = Mais baixo
 vol-up = Mais alto
+set-large-text = Texto maior
+set-high-contrast = Alto contraste

@@ -353,3 +353,5 @@ pointer-hint = Левый стик: двигать · нижняя: щелчок
 vol-title = Громкость
 vol-down = Тише
 vol-up = Громче
+set-large-text = Крупный текст
+set-high-contrast = Высокая контрастность

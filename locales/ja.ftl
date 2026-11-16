@@ -336,3 +336,5 @@ pointer-hint = 左スティック：移動 · 下：クリック · 右：右ク
 vol-title = 音量
 vol-down = 小さく
 vol-up = 大きく
+set-large-text = 文字を大きく
+set-high-contrast = ハイコントラスト

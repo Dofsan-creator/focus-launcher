@@ -346,3 +346,5 @@ pointer-hint = Left stick: move · bottom: click · right: right-click · top: k
 vol-title = Volume
 vol-down = Quieter
 vol-up = Louder
+set-large-text = Larger text
+set-high-contrast = High contrast

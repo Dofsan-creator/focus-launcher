@@ -430,6 +430,26 @@ img { user-select: none; }
 @keyframes fx-name { from { opacity: 0; transform: scale(1.18); } }
 .fx-line { position: relative; width: min(560px, 62vw); height: 3px; border-radius: 2px; background: var(--fx); transform-origin: center; animation: boot-line 900ms var(--ease) 560ms both; }
 
+/* Accessibilité : texte agrandi et contraste élevé, choisis dans « Son et affichage ». */
+:root[data-text="large"] body { font-size: clamp(20px, 1.6vw, 34px); }
+:root[data-text="large"] h1 { font-size: clamp(36px, 3.7vw, 70px); }
+:root[data-text="large"] h2 { font-size: clamp(23px, 1.9vw, 34px); }
+:root[data-text="large"] .f.play, :root[data-text="large"] .f.tab { font-size: clamp(20px, 1.45vw, 28px); }
+:root[data-text="large"] .meta, :root[data-text="large"] .lead { font-size: clamp(19px, 1.35vw, 26px); }
+:root[data-text="large"] .placeholder .name { font-size: clamp(16px, 1.2vw, 23px); }
+:root[data-text="large"] .mini-tile .name { font-size: 15px; }
+:root[data-text="large"] .launch-title { font-size: clamp(27px, 2.5vw, 48px); }
+:root[data-contrast="high"] {
+  --muted: #e4e6ea;
+  --surface: rgba(255, 255, 255, 0.16);
+  --surface-2: rgba(255, 255, 255, 0.26);
+  --glass: rgba(6, 7, 10, 0.92);
+}
+:root[data-contrast="high"] .f:focus, :root[data-contrast="high"] .f:focus-visible {
+  box-shadow: 0 0 0 4px #ffffff, 0 0 0 9px #000000;
+}
+:root[data-contrast="high"] .backdrop .layer.on { opacity: 0.35; }
+
 /* Volume général du panneau rapide */
 .volume-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; padding: 10px 14px; border-radius: var(--radius-lg); background: var(--surface); }
 .volume-label { font-weight: 650; margin-inline-end: auto; }

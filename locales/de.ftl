@@ -344,3 +344,5 @@ pointer-hint = Linker Stick: bewegen · unten: klicken · rechts: Rechtsklick ·
 vol-title = Lautstärke
 vol-down = Leiser
 vol-up = Lauter
+set-large-text = Größerer Text
+set-high-contrast = Hoher Kontrast

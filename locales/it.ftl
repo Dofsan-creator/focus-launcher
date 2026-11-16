@@ -344,3 +344,5 @@ pointer-hint = Levetta sinistra: muovi · basso: clic · destra: clic destro · 
 vol-title = Volume
 vol-down = Più basso
 vol-up = Più alto
+set-large-text = Testo più grande
+set-high-contrast = Contrasto elevato

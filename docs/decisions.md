@@ -285,6 +285,17 @@ Vérifié dans le navigateur : panneau rapide, volume de 60 % à 70 %, texte agr
 
 Vérifié en vrai : la jaquette de Wuthering Waves est trouvée par son titre et téléchargée (test ponctuel `steam_store`). Le cache des images est recalculé une fois (version 3).
 
+## 31. Texte agrandi et contraste élevé (2026-11-16)
+
+| Point | Options | Choix |
+| --- | --- | --- |
+| Réglage de taille | Curseur à plusieurs crans ; zoom de toute la page ; interrupteur « Texte agrandi » | **Interrupteur** : un seul geste à la manette, et le zoom de page casserait les rangées de tuiles calées sur la largeur de l'écran |
+| Mise en œuvre | Variable multiplicatrice dans toutes les tailles ; attribut `data-text` sur la racine | **Attribut** : la taille du corps passe à environ 1,3 fois, et les textes en pixels fixes (titres, onglets, Jouer, noms de tuiles) ont leur propre règle |
+| Contraste | Thème clair ; thème « contraste élevé » de Windows ; attribut `data-contrast` | **Attribut** : textes secondaires presque blancs, surfaces plus opaques, fond d'écran assombri, focus blanc cerné de noir (lisible sur toute jaquette) |
+| Place | Nouvelle section ; « Son et affichage » | **Son et affichage**, à côté de « Réduire les animations » |
+
+Les anciens réglages se relisent sans ces champs (valeurs par défaut : désactivés).
+
 ## Propositions de changement (à trancher par l'utilisateur)
 
 1. Livrer d'abord les 11 langues actuelles, puis les autres par la communauté (v4.4 demande toutes les langues de Windows avant la sortie).

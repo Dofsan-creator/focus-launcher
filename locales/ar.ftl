@@ -364,3 +364,5 @@ pointer-hint = العصا اليسرى: تحريك · السفلي: نقر · ا
 vol-title = مستوى الصوت
 vol-down = أخفض
 vol-up = أعلى
+set-large-text = نص أكبر
+set-high-contrast = تباين عالٍ

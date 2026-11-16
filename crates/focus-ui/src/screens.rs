@@ -1216,6 +1216,8 @@ fn SettingsScreen() -> impl IntoView {
                 <h2><Icon name="volume"/>{move || i18n.t("set-section-sound")}</h2>
                 {crate::setting_toggle!(ctx, "set-sounds", sounds)}
                 {crate::setting_toggle!(ctx, "set-music", music)}
+                {crate::setting_toggle!(ctx, "set-large-text", large_text)}
+                {crate::setting_toggle!(ctx, "set-high-contrast", high_contrast)}
                 {crate::setting_toggle!(ctx, "set-motion", reduce_motion)}
                 {crate::setting_toggle!(ctx, "set-theme", auto_theme)}
             </section>

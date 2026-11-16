@@ -336,3 +336,5 @@ pointer-hint = 左摇杆：移动 · 下键：点击 · 右键：右击 · 上�
 vol-title = 音量
 vol-down = 调小
 vol-up = 调大
+set-large-text = 放大文字
+set-high-contrast = 高对比度

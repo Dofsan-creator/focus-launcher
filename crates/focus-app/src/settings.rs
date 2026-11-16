@@ -69,6 +69,10 @@ pub struct Settings {
     pub vibration: bool,
     /// Réduire les animations.
     pub reduce_motion: bool,
+    /// Texte agrandi, pour une télé vue de loin ou une vue fatiguée.
+    pub large_text: bool,
+    /// Contraste élevé : textes plus blancs, surfaces et focus plus marqués.
+    pub high_contrast: bool,
     /// Thème selon l'heure.
     pub auto_theme: bool,
     /// Délai avant l'ouverture à l'ouverture de session, en secondes.
@@ -98,6 +102,8 @@ impl Default for Settings {
             music: true,
             vibration: true,
             reduce_motion: false,
+            large_text: false,
+            high_contrast: false,
             auto_theme: false,
             autostart_delay: 3,
             start_minimized: false,
