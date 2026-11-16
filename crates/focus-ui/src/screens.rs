@@ -1360,8 +1360,8 @@ fn Checks(checks: crate::api::Checks) -> impl IntoView {
         let body = format!("{title}-body");
         view! {
             <div class="check">
-                <p class="option-title">{i18n.t(&title)}</p>
-                <p class="option-body">{i18n.t(&body)}</p>
+                <p class="option-title">{move || i18n.t(&title)}</p>
+                <p class="option-body">{move || i18n.t(&body)}</p>
                 {action.map(|(page, label)| view! {
                     <button class="f pill" on:click=open(page)>{move || i18n.t(label)}</button>
                 })}
