@@ -151,6 +151,7 @@ pub fn run(launch: Launch) {
             commands::install_app,
             commands::open_official_page,
             commands::system_report,
+            commands::open_windows_page,
             commands::set_autostart,
             commands::guardian_status,
             commands::install_guardian,

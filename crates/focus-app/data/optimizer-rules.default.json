@@ -84,6 +84,14 @@
           "restoreAfterGame": true,
           "risk": "low",
           "reason": "Printing is not used while playing"
+        },
+        {
+          "type": "service",
+          "name": "InstallService",
+          "action": "stop",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "No Store app installs or updates in the middle of a game"
         }
       ]
     },
@@ -170,6 +178,14 @@
           "restoreAfterGame": true,
           "risk": "low",
           "reason": "Printing is not used while playing"
+        },
+        {
+          "type": "service",
+          "name": "InstallService",
+          "action": "stop",
+          "restoreAfterGame": true,
+          "risk": "low",
+          "reason": "No Store app installs or updates in the middle of a game"
         },
         {
           "type": "process",

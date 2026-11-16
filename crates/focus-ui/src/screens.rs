@@ -1018,6 +1018,51 @@ fn EndedScreen(end: crate::api::SessionEnd) -> impl IntoView {
     }
 }
 
+/// Le mode console est allumé : look console et optimisation réelle ensemble.
+pub fn console_on(settings: &crate::api::Settings) -> bool {
+    settings.console_mode && settings.optimization != "off"
+}
+
+/// Interrupteur unique « Mode console » (décision 32) : Windows s'efface et le niveau
+/// Concentration s'applique. Allumer demande l'accord (règle 8) ; éteindre rend tout.
+/// Le niveau Maximal et les détails restent dans « Avancé ».
+#[component]
+pub fn ConsoleSwitch() -> impl IntoView {
+    let (ctx, i18n) = (ctx(), use_i18n());
+    let asking = RwSignal::new(false);
+    let on = Signal::derive(move || ctx.settings.with(|s| s.as_ref().is_some_and(console_on)));
+    view! {
+        <Toggle label="set-console-switch" value=on on_change=Callback::new(move |_| {
+            if on.get_untracked() {
+                ctx.update_settings(|s| {
+                    s.console_mode = false;
+                    s.optimization = "off".to_owned();
+                });
+                apply_console(ctx);
+            } else {
+                asking.set(true);
+                ctx.dialog_open.set(true);
+                after_render(nav::focus_first);
+            }
+        })/>
+        <p class="muted">{move || i18n.t("set-console-switch-body")}</p>
+        <Show when=move || asking.get() && ctx.dialog_open.get()>
+            <Confirm question=Signal::derive(move || i18n.t("set-real-confirm")) detail="set-real-body"
+                on_yes=Callback::new(move |_| {
+                    ctx.update_settings(|s| {
+                        s.console_mode = true;
+                        if s.optimization == "off" {
+                            s.optimization = "balanced".to_owned();
+                        }
+                    });
+                    apply_console(ctx);
+                    asking.set(false);
+                    ctx.back();
+                })/>
+        </Show>
+    }
+}
+
 /// Choix du niveau d'optimisation, avec accord explicite pour un niveau réel (règle 8).
 #[component]
 pub fn OptimizationChoice() -> impl IntoView {
@@ -1119,7 +1164,7 @@ fn SettingsScreen() -> impl IntoView {
     let section = ctx.set_section;
     let nav = [
         ("console", "display", "set-section-console"),
-        ("opt", "bolt", "set-section-opt"),
+        ("opt", "bolt", "set-section-advanced"),
         ("pad", "gamepad", "set-glyphs"),
         ("sound", "volume", "set-section-sound"),
         ("network", "wifi", "con-title"),
@@ -1145,10 +1190,7 @@ fn SettingsScreen() -> impl IntoView {
             <section class="group">
                 <h2><Icon name="display"/>{move || i18n.t("set-section-console")}</h2>
                 <p>{move || i18n.t("set-console-body")}</p>
-                {console_toggle("set-console", |s| s.console_mode, |s| s.console_mode = !s.console_mode)}
-                {console_toggle("set-stop-shell", |s| s.stop_shell, |s| s.stop_shell = !s.stop_shell)}
-                {console_toggle("set-hide-taskbar", |s| s.hide_taskbar, |s| s.hide_taskbar = !s.hide_taskbar)}
-                {console_toggle("set-silence", |s| s.silence_notifications, |s| s.silence_notifications = !s.silence_notifications)}
+                <ConsoleSwitch/>
                 <Toggle label="set-autostart" value=Signal::derive(move || autostart.get())
                     on_change=Callback::new(move |_| {
                         let wanted = !autostart.get_untracked();
@@ -1161,7 +1203,12 @@ fn SettingsScreen() -> impl IntoView {
             </Show>
             <Show when=move || section.get() == "opt">
             <section class="group">
-                <h2><Icon name="bolt"/>{move || i18n.t("set-section-opt")}</h2>
+                <h2><Icon name="bolt"/>{move || i18n.t("set-section-advanced")}</h2>
+                {console_toggle("set-console", |s| s.console_mode, |s| s.console_mode = !s.console_mode)}
+                {console_toggle("set-stop-shell", |s| s.stop_shell, |s| s.stop_shell = !s.stop_shell)}
+                {console_toggle("set-hide-taskbar", |s| s.hide_taskbar, |s| s.hide_taskbar = !s.hide_taskbar)}
+                {console_toggle("set-silence", |s| s.silence_notifications, |s| s.silence_notifications = !s.silence_notifications)}
+                <h2>{move || i18n.t("set-section-opt")}</h2>
                 <OptimizationChoice/>
                 {crate::setting_toggle!(ctx, "set-keep-social", keep_social)}
                 {crate::setting_toggle!(ctx, "set-awake", keep_awake)}
@@ -1285,6 +1332,8 @@ fn AnalysisScreen() -> impl IntoView {
                         <p>{i18n.ts("an-memory", "gb", &gb)}</p>
                         <p>{i18n.tn("an-processes", "count", report.processes)}</p>
                         <p>{i18n.tn("an-services", "count", report.services)}</p>
+                        <h2>{i18n.t("an-checks")}</h2>
+                        <Checks checks=report.checks/>
                         <h2>{i18n.t("an-top")}</h2>
                         <ul class="steps-list">{top}</ul>
                     }.into_any()
@@ -1294,6 +1343,37 @@ fn AnalysisScreen() -> impl IntoView {
                 <button class="f primary" data-auto="" on:click=move |_| ctx.back()>{move || i18n.t("hint-back")}</button>
             </div>
         </main>
+    }
+}
+
+/// Bilan en lecture seule (décision 32) : Focus montre, Windows décide.
+#[component]
+fn Checks(checks: crate::api::Checks) -> impl IntoView {
+    let i18n = use_i18n();
+    let open = |page: &'static str| move |_| {
+        spawn_local(async move {
+            let _ = invoke::<bool>("open_windows_page", json!({ "page": page })).await;
+        });
+    };
+    let row = move |key: &'static str, on: bool, action: Option<(&'static str, &'static str)>| {
+        let title = format!("an-{key}-{}", if on { "on" } else { "off" });
+        let body = format!("{title}-body");
+        view! {
+            <div class="check">
+                <p class="option-title">{i18n.t(&title)}</p>
+                <p class="option-body">{i18n.t(&body)}</p>
+                {action.map(|(page, label)| view! {
+                    <button class="f pill" on:click=open(page)>{move || i18n.t(label)}</button>
+                })}
+            </div>
+        }
+    };
+    view! {
+        <div class="stack">
+            {checks.memory_integrity.map(|on| row("mi", on, Some(("memoryIntegrity", "an-open-security"))))}
+            {checks.gpu_scheduling.map(|on| row("gpu", on, (!on).then_some(("gpuScheduling", "an-open-graphics")))) }
+            {checks.fast_startup.filter(|on| *on).map(|on| row("fast", on, None))}
+        </div>
     }
 }
 

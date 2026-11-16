@@ -5,7 +5,7 @@ use crate::api::invoke;
 use crate::app::{ctx, Ctx, Screen, SETUP_STEPS};
 use crate::i18n::{use_i18n, LANGS};
 use crate::icons::Icon;
-use crate::screens::{accent_of, OptimizationChoice, Toggle};
+use crate::screens::{accent_of, console_on, ConsoleSwitch, Toggle};
 use focus_core::art::ArtKind;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -50,13 +50,10 @@ fn languages(ctx: Ctx) -> AnyView {
     view! { <div class="lang-grid">{buttons}</div> }.into_any()
 }
 
-fn console_step(ctx: Ctx) -> AnyView {
+fn console_step() -> AnyView {
     view! {
         <div class="stack">
-            {crate::setting_toggle!(ctx, "set-console", console_mode)}
-            {crate::setting_toggle!(ctx, "set-stop-shell", stop_shell)}
-            {crate::setting_toggle!(ctx, "set-hide-taskbar", hide_taskbar)}
-            {crate::setting_toggle!(ctx, "set-silence", silence_notifications)}
+            <ConsoleSwitch/>
         </div>
     }
     .into_any()
@@ -192,22 +189,20 @@ pub fn SetupScreen(step: u8) -> impl IntoView {
         2 => ("setup-pad-title", Some("setup-pad-body")),
         3 => ("setup-net-title", Some("setup-net-body")),
         4 => ("setup-lib-title", None),
-        5 => ("setup-opt-title", Some("setup-opt-body")),
-        6 => ("setup-comfort-title", Some("setup-comfort-body")),
+        5 => ("setup-comfort-title", Some("setup-comfort-body")),
         _ => ("setup-done-title", Some("setup-done-body")),
     };
     let content = match step {
         0 => languages(ctx),
-        1 => console_step(ctx),
+        1 => console_step(),
         2 => pad_step(ctx),
         3 => net_step(ctx),
         4 => library_step(ctx),
-        5 => view! { <OptimizationChoice/> }.into_any(),
-        6 => comfort_step(ctx),
+        5 => comfort_step(ctx),
         _ => done_step(ctx),
     };
-    // La langue et le choix d'optimisation proposent eux-mêmes un bouton par défaut.
-    let next_is_default = !matches!(step, 0 | 5);
+    // La langue propose elle-même un bouton par défaut.
+    let next_is_default = step != 0;
     let dots = (0..SETUP_STEPS)
         .map(|index| view! { <span class="dot" class:on={index <= step}></span> })
         .collect_view();
@@ -229,6 +224,10 @@ pub fn SetupScreen(step: u8) -> impl IntoView {
                     </button>
                 </Show>
                 <button class="f primary" data-auto=next_is_default.then_some("") on:click=move |_| {
+                    // Interrupteur laissé éteint : Windows reste tel quel (décision 32).
+                    if step == 1 && !ctx.settings.with_untracked(|s| s.as_ref().is_some_and(console_on)) {
+                        ctx.update_settings(|s| s.console_mode = false);
+                    }
                     if last {
                         finish(ctx, i18n.lang.get_untracked());
                     } else {

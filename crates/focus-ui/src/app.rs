@@ -16,7 +16,7 @@ use wasm_bindgen::JsCast;
 use web_sys::KeyboardEvent;
 
 /// Nombre d'étapes de l'assistant du premier démarrage.
-pub const SETUP_STEPS: u8 = 8;
+pub const SETUP_STEPS: u8 = 7;
 
 /// Écrans. L'ordre d'arrivée forme la pile de retour.
 #[derive(Clone, PartialEq)]

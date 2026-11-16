@@ -62,6 +62,7 @@ Une ligne par constat (v4, section 5). Gravité : critique, haute, moyenne, bass
 | 50 | 2026-11-12 | haute, corrigé | Premier essai réel (décision 25) : manette restée masquée après l'arrêt du PC, terminal pris pour le jeu, journal bloqué, changement de niveau sans effet avant redémarrage de Focus, sélecteur irrégulier | Corrigé et testé (190 tests) ; 🧑 à revoir à l'écran |
 
 | 51 | 2026-11-12 | haute, à essayer | Souris à la manette (décision 28) jamais essayée avec une vraie manette, ni le clavier de Windows ouvert depuis Focus sans bureau | 🧑 Panneau rapide, « Souris à la manette » : bouger, cliquer, ouvrir le clavier (bouton du haut), revenir (bouton central). Puis lancer Wuthering Waves et cliquer « Démarrer » dans son lanceur |
+| 52 | 2026-11-16 | moyenne, à essayer | Leviers de la décision 32 jamais essayés sur le matériel : bouton central libéré de la Game Bar, applications de fond en pause, service d'installation du Store arrêté, pages de Windows ouvertes depuis Focus sans bureau | 🧑 Mode console allumé : bouton central en jeu (Focus doit répondre, pas la Game Bar) ; quitter Focus et vérifier que la Game Bar répond de nouveau ; Analyse → « Ouvrir Sécurité Windows » |
 
 ## Contradictions des specs, réglées par la règle la plus prudente
 

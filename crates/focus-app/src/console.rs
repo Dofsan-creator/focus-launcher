@@ -35,12 +35,19 @@ pub struct ConsoleState {
 }
 
 /// Réglages du compte (HKCU) changés en mode console, avec l’accord de l’utilisateur
-/// du 2026-11-08 : enregistrement de jeu, capture, transparence, mode Jeu.
-const USER_TWEAKS: [(&str, &str, u32); 4] = [
+/// du 2026-11-08 : enregistrement de jeu, capture, transparence, mode Jeu. Ajouts du
+/// 2026-11-16 (décision 32, repris d'AtlasOS et tiny11) : bouton central de la manette
+/// laissé à Focus, applications du Store sans arrière-plan, aucune installation suggérée
+/// ni astuce pendant la session.
+const USER_TWEAKS: [(&str, &str, u32); 8] = [
     ("System\\GameConfigStore", "GameDVR_Enabled", 0),
     ("Software\\Microsoft\\Windows\\CurrentVersion\\GameDVR", "AppCaptureEnabled", 0),
     ("Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "EnableTransparency", 0),
     ("Software\\Microsoft\\GameBar", "AutoGameModeEnabled", 1),
+    ("Software\\Microsoft\\GameBar", "UseNexusForGameBarEnabled", 0),
+    ("Software\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications", "GlobalUserDisabled", 1),
+    ("Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "SilentInstalledAppsEnabled", 0),
+    ("Software\\Microsoft\\Windows\\CurrentVersion\\ContentDeliveryManager", "SoftLandingEnabled", 0),
 ];
 
 /// Ce que l'utilisateur a choisi pour le mode console.

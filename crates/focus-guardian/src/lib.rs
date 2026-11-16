@@ -26,6 +26,7 @@ pub const ALLOWED_SERVICES: &[&str] = &[
     "bits",
     "spooler",
     "diagtrack",
+    "installservice",
 ];
 
 /// Demande d'un client.

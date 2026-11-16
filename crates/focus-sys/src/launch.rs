@@ -55,6 +55,17 @@ pub fn open_system_tool(path: &str) -> Result<(), LaunchError> {
     shell_open(path)
 }
 
+/// Ouvre une page de Windows du bilan (décision 32). Seules les pages de cette liste
+/// compilée sont acceptées ; l'utilisateur décide lui-même dans Windows.
+pub fn open_windows_page(page: &str) -> Result<(), LaunchError> {
+    let target = match page {
+        "memoryIntegrity" => "windowsdefender://coreisolation",
+        "gpuScheduling" => "ms-settings:display-advancedgraphics",
+        _ => return Err(LaunchError::Refused(page.to_owned())),
+    };
+    shell_open(target)
+}
+
 /// Ouvre une adresse par l'association de Windows.
 fn shell_open(target: &str) -> Result<(), LaunchError> {
     let (open, target) = (wide("open"), wide(target));

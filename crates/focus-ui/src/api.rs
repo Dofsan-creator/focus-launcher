@@ -107,6 +107,17 @@ pub struct SystemReport {
     pub processes: u64,
     pub services: u64,
     pub top: Vec<(String, u64)>,
+    #[serde(default)]
+    pub checks: Checks,
+}
+
+/// Bilan en lecture seule : `None` quand Windows ne donne pas la valeur.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Deserialize)]
+#[serde(rename_all = "camelCase", default)]
+pub struct Checks {
+    pub memory_integrity: Option<bool>,
+    pub gpu_scheduling: Option<bool>,
+    pub fast_startup: Option<bool>,
 }
 
 /// Jeu que Steam télécharge ou met à jour.
@@ -415,8 +426,10 @@ fn demo(command: &str, args: &Value) -> Value {
         "controller_status" => json!({ "family": "other", "mode": "native", "battery": null }),
         "system_report" => json!({
             "hardware": { "cpu": "Demo CPU", "memory": 34359738368_u64 },
-            "processes": 214, "services": 287, "top": [["demo", 1073741824_u64]]
+            "processes": 214, "services": 287, "top": [["demo", 1073741824_u64]],
+            "checks": { "memoryIntegrity": true, "gpuScheduling": false, "fastStartup": true }
         }),
+        "open_windows_page" => json!(false),
         "downloads" => json!({
             "steam": [
                 { "appid": "20", "name": "Northern Lights", "done": 6_442_450_944_u64, "total": 16_106_127_360_u64 },

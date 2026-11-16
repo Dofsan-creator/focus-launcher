@@ -296,6 +296,23 @@ Vérifié en vrai : la jaquette de Wuthering Waves est trouvée par son titre et
 
 Les anciens réglages se relisent sans ces champs (valeurs par défaut : désactivés).
 
+## 32. Ce que Focus reprend de tiny11 et AtlasOS, interrupteur unique (2026-11-16)
+
+Lu dans les sources : `tiny11maker.ps1` (ntdevlabs/tiny11builder) et les manifestes de `playbook/Executables/AtlasModules/Scripts/Tweaks` (Atlas-OS/Atlas).
+
+- **tiny11** allège l'image d'installation : 52 applications retirées, Edge et OneDrive supprimés, télémétrie, contenus sponsorisés, exigences matérielles contournées, chiffrement BitLocker empêché. Presque rien n'agit pendant une partie : un seul service coupé (dmwappushservice) et cinq tâches planifiées supprimées.
+- **AtlasOS** change Windows pour de bon : registre système (MMCSS, priorités, tas tolérant aux pannes), regroupement des services, NTFS, démarrage (bcdedit), protections de sécurité et intégrité de la mémoire coupées en option, mises à jour désactivées, Game Bar coupée.
+
+| Point | Options | Choix |
+| --- | --- | --- |
+| Ce qu'on reprend | Tout ; rien ; seulement ce qui se défait à la sortie | **Ce qui se défait à la sortie** (SPEC D15, règles 1 et 3) : le reste exige l'écriture HKLM, un redémarrage ou affaiblit la sécurité |
+| Nouveaux leviers (accord de l'utilisateur du 2026-11-16) | — | Bouton central rendu à Focus (HKCU `GameBar` `UseNexusForGameBarEnabled=0`, AtlasOS) ; applications du Store sans arrière-plan (HKCU `BackgroundAccessApplications` `GlobalUserDisabled=1`, AtlasOS) ; aucune installation suggérée ni astuce (HKCU `ContentDeliveryManager` `SilentInstalledAppsEnabled=0`, `SoftLandingEnabled=0`, tiny11) ; service `InstallService` arrêté dans les deux niveaux, ajouté à la liste compilée du gardien |
+| Intégrité de la mémoire, planification graphique, démarrage rapide | Les changer ; les ignorer ; **les montrer** | **Bilan en lecture seule** dans Analyse, avec un lien vers la page de Windows (liste compilée de deux pages). Focus n'écrit rien : l'utilisateur décide dans Windows. Valeur absente : point non affiché |
+| Écarté | — | MMCSS, `Win32PrioritySeparation` (déjà la valeur par défaut), tas tolérant aux pannes, regroupement des services, NTFS, bcdedit : HKLM et permanents. Mises à jour coupées pour de bon : remplacé par la pause pendant la session (niveau Maximal). Mitigations et VBS coupées : sécurité |
+| Interrupteur du premier démarrage | Trois niveaux ; console seule ; **console + Concentration** | **Console + Concentration** : un seul interrupteur « Mode console », accord demandé en l'allumant (règle 8). Laissé éteint, Windows reste tel quel. Le niveau Maximal (non essayé sur le matériel, AUDIT 26) et les détails du mode console passent dans « Avancé ». L'assistant perd l'étape des niveaux (7 étapes) |
+
+Les fichiers de règles déjà enregistrés ne reçoivent pas la règle `InstallService` (seuls les profils manquants sont ajoutés) ; sans effet tant qu'aucune version n'est publiée. Non essayé sur le matériel : AUDIT 52.
+
 ## Propositions de changement (à trancher par l'utilisateur)
 
 1. Livrer d'abord les 11 langues actuelles, puis les autres par la communauté (v4.4 demande toutes les langues de Windows avant la sortie).

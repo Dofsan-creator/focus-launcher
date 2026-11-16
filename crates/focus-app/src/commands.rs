@@ -728,6 +728,28 @@ pub struct SystemReport {
     processes: usize,
     services: usize,
     top: Vec<(String, u64)>,
+    #[cfg(windows)]
+    checks: focus_sys::report::Checks,
+}
+
+/// Ouvre une page de Windows proposée par le bilan. Liste compilée dans `focus-sys`.
+#[tauri::command]
+pub fn open_windows_page(page: String) -> bool {
+    #[cfg(windows)]
+    {
+        match focus_sys::launch::open_windows_page(&page) {
+            Ok(()) => true,
+            Err(err) => {
+                tracing::warn!("windows page not opened: {err}");
+                false
+            }
+        }
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = page;
+        false
+    }
 }
 
 #[tauri::command]
@@ -748,6 +770,7 @@ pub async fn system_report() -> Option<SystemReport> {
                 processes: snapshot.processes.len(),
                 services: snapshot.services.len(),
                 top,
+                checks: focus_sys::report::checks(),
             }
         })
         .await
