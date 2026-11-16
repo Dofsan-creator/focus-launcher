@@ -181,7 +181,10 @@ impl Console {
 
     /// Fait passer Windows en mode console. Sans journal écrit, rien ne change.
     pub fn enter(&self, wanted: Wanted, on_home: impl Fn() + Send + 'static) {
-        self.leave();
+        // Un réglage changé en cours de route ne relance pas le bureau pour l'arrêter
+        // aussitôt : il reste arrêté s'il doit l'être encore.
+        let keep_shell = wanted.stop_shell && self.shell_stopped();
+        self.close(keep_shell);
         let mut state = ConsoleState {
             taskbar_hidden: wanted.hide_taskbar,
             focus_session: wanted.silence,
@@ -239,10 +242,21 @@ impl Console {
 
     /// Rend à Windows son état normal.
     pub fn leave(&self) {
+        self.close(false);
+    }
+
+    /// Défait le mode console ; `keep_shell` laisse le bureau arrêté pour une reprise
+    /// immédiate (le journal suivant le note de nouveau avant tout changement).
+    fn close(&self, keep_shell: bool) {
         // Le verrou reste tenu pendant la remise en état : la tâche qui remasque la
         // barre des tâches ne peut pas passer entre les deux.
         let mut active = lock(&self.active);
-        let state = active.take();
+        let state = active.take().map(|mut state| {
+            if keep_shell {
+                state.shell_stopped = false;
+            }
+            state
+        });
         #[cfg(windows)]
         {
             lock(&self.awake).take();
