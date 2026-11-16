@@ -514,3 +514,5 @@ img { user-select: none; }
 /* Bilan en lecture seule de l’écran Analyse (décision 32) */
 .check { padding: 12px 16px; border-radius: var(--radius-lg); background: var(--surface); display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
 .check p { margin: 0; }
+.glyph { gap: 0.3em; grid-auto-flow: column; }
+.pad-dot { width: 1.05em; height: 1.05em; }

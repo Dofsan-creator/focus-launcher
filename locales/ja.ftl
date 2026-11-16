@@ -354,3 +354,4 @@ an-open-graphics = グラフィックの設定を開く
 set-console-switch = コンソール モード
 set-console-switch-body = Windows は控えめになり、PC はゲームに集中します。バックグラウンドのプログラムを遅くし、検索と事前読み込みを一時停止します。Focus を終了するとすべて元に戻ります。
 set-section-advanced = 詳細設定
+glyph-positions = 位置

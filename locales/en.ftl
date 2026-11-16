@@ -364,3 +364,4 @@ an-open-graphics = Open graphics settings
 set-console-switch = Console mode
 set-console-switch-body = Windows steps aside and your PC focuses on the game: background programs slowed down, search and preloading paused. Everything comes back when you leave Focus.
 set-section-advanced = Advanced
+glyph-positions = Positions

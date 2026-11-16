@@ -362,3 +362,4 @@ an-open-graphics = Abrir la configuración de gráficos
 set-console-switch = Modo consola
 set-console-switch-body = Windows se aparta y tu PC se dedica al juego: programas en segundo plano ralentizados, búsqueda y precarga en pausa. Todo vuelve al salir de Focus.
 set-section-advanced = Avanzado
+glyph-positions = Posiciones

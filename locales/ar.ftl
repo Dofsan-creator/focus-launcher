@@ -382,3 +382,4 @@ an-open-graphics = فتح إعدادات الرسومات
 set-console-switch = وضع المنصة
 set-console-switch-body = يتنحّى Windows جانبًا ويتفرّغ جهازك للعبة: إبطاء برامج الخلفية وإيقاف البحث والتحميل المسبق مؤقتًا. يعود كل شيء عند الخروج من Focus.
 set-section-advanced = متقدم
+glyph-positions = المواضع

@@ -362,3 +362,4 @@ an-open-graphics = Grafikeinstellungen öffnen
 set-console-switch = Konsolenmodus
 set-console-switch-body = Windows tritt zurück und dein PC konzentriert sich aufs Spiel: Hintergrundprogramme gebremst, Suche und Vorladen pausiert. Alles kommt zurück, wenn du Focus verlässt.
 set-section-advanced = Erweitert
+glyph-positions = Positionen

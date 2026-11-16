@@ -13,6 +13,8 @@ pub enum GlyphStyle {
     PlayStation,
     /// Lettres.
     Xbox,
+    /// Position du bouton seulement, pour toute manette (décision 33).
+    Positions,
 }
 
 /// Niveau d'optimisation pendant une session, choisi au premier démarrage.

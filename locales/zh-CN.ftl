@@ -354,3 +354,4 @@ an-open-graphics = 打开图形设置
 set-console-switch = 主机模式
 set-console-switch-body = Windows 退到幕后，电脑专注于游戏：后台程序减速，搜索和预加载暂停。退出 Focus 后一切恢复原状。
 set-section-advanced = 高级
+glyph-positions = 位置

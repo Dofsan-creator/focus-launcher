@@ -371,3 +371,4 @@ an-open-graphics = Открыть настройки графики
 set-console-switch = Режим консоли
 set-console-switch-body = Windows уходит в тень, а ПК отдаёт всё игре: фоновые программы замедлены, поиск и предзагрузка на паузе. Всё вернётся, когда вы выйдете из Focus.
 set-section-advanced = Дополнительно
+glyph-positions = Положение

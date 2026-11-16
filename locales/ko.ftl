@@ -354,3 +354,4 @@ an-open-graphics = 그래픽 설정 열기
 set-console-switch = 콘솔 모드
 set-console-switch-body = Windows는 뒤로 물러나고 PC는 게임에 집중합니다. 백그라운드 프로그램은 느려지고 검색과 미리 읽기는 일시 중지됩니다. Focus를 나가면 모두 원래대로 돌아옵니다.
 set-section-advanced = 고급
+glyph-positions = 위치

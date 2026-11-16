@@ -313,6 +313,16 @@ Lu dans les sources : `tiny11maker.ps1` (ntdevlabs/tiny11builder) et les manifes
 
 Les fichiers de règles déjà enregistrés ne reçoivent pas la règle `InstallService` (seuls les profils manquants sont ajoutés) ; sans effet tant qu'aucune version n'est publiée. Non essayé sur le matériel : AUDIT 52.
 
+## 33. Symboles de boutons (2026-11-16)
+
+| Point | Options | Choix |
+| --- | --- | --- |
+| Symbole | Formes et lettres seules ; position seule ; **position + libellé** | **Losange de quatre points** (dessin de Focus, le point plein montre le bouton) suivi du libellé imprimé sur la manette, en une couleur. Le libellé dit quoi presser, le losange dit où |
+| Manette non reconnue | Lettres A/B par défaut ; **position seule** | **Position seule** : sur une manette au placement inversé (A à droite), « A » ferait presser le mauvais bouton |
+| Réglage | — | Quatrième choix « Positions » dans les icônes des boutons |
+
+Revue d'originalité : `docs/originality-review.md`.
+
 ## Propositions de changement (à trancher par l'utilisateur)
 
 1. Livrer d'abord les 11 langues actuelles, puis les autres par la communauté (v4.4 demande toutes les langues de Windows avant la sortie).

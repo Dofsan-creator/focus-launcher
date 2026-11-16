@@ -1155,7 +1155,7 @@ fn SettingsScreen() -> impl IntoView {
                 ctx.update_settings(|s| s.language = Some(lang.code.to_owned()));
             }>{lang.name}</button>
     }).collect_view();
-    let glyphs = move || ["auto", "playStation", "xbox"].map(|style| view! {
+    let glyphs = move || ["auto", "playStation", "xbox", "positions"].map(|style| view! {
         <button class="f chip-button" aria-pressed=move || ctx.settings.with(|s| s.as_ref().is_some_and(|s| s.glyphs == style)).to_string()
             on:click=move |_| ctx.update_settings(|s| s.glyphs = style.to_owned())>
             {move || i18n.t(&format!("glyph-{style}"))}
@@ -1862,20 +1862,54 @@ pub fn Toast() -> impl IntoView {
     }
 }
 
+/// Losange de quatre points dessiné par Focus : le point plein montre où est le bouton
+/// (bas, haut, droite, gauche). Vaut pour toute manette (décision 33).
+#[component]
+fn PadDot(pos: usize) -> impl IntoView {
+    const DOTS: [(u8, u8); 4] = [(8, 14), (8, 2), (14, 8), (2, 8)];
+    let dots = DOTS
+        .iter()
+        .enumerate()
+        .map(|(index, (x, y))| {
+            let on = index == pos;
+            view! { <circle cx=*x cy=*y r="2.6" fill="currentColor" opacity=if on { "1" } else { "0.32" }/> }
+        })
+        .collect_view();
+    view! { <svg class="pad-dot" viewBox="0 0 16 16" aria-hidden="true">{dots}</svg> }
+}
+
+/// Libellé imprimé sur la manette pour une position : formes ou lettres, en une couleur.
+/// `None` quand la manette n'est pas reconnue : la position seule ne trompe jamais.
+fn pad_label(style: &str, family: &str, pos: usize) -> Option<&'static str> {
+    let shapes = style == "playStation" || (style == "auto" && family == "playStation");
+    let letters = style == "xbox" || (style == "auto" && family == "xbox");
+    if shapes {
+        Some(["✕", "△", "○", "□"][pos])
+    } else if letters {
+        Some(["A", "Y", "B", "X"][pos])
+    } else {
+        None
+    }
+}
+
 /// Barre d'aide : les symboles suivent le dernier périphérique et la manette.
 #[component]
 pub fn Hints() -> impl IntoView {
     let (ctx, i18n) = (ctx(), use_i18n());
-    let glyph = move |slot: usize| -> String {
+    // Emplacements : valider (bas), options (haut), retour (droite), panneau (menu).
+    const POSITIONS: [Option<usize>; 4] = [Some(0), Some(1), Some(2), None];
+    let glyph = move |slot: usize| -> AnyView {
         let style = ctx
             .settings
             .with(|s| s.as_ref().map_or("auto".to_owned(), |s| s.glyphs.clone()));
-        let shapes = style == "playStation" || (style == "auto" && ctx.family.get() == "playStation");
-        match ctx.device.get() {
-            Device::Keyboard => ["↵", "F2", "Esc", "F1"][slot].to_owned(),
-            Device::Mouse => String::new(),
-            Device::Pad if shapes => ["✕", "△", "○", "≡"][slot].to_owned(),
-            Device::Pad => ["A", "Y", "B", "≡"][slot].to_owned(),
+        match (ctx.device.get(), POSITIONS[slot]) {
+            (Device::Keyboard, _) => ["↵", "F2", "Esc", "F1"][slot].into_any(),
+            (Device::Mouse, _) => "".into_any(),
+            (Device::Pad, None) => "≡".into_any(),
+            (Device::Pad, Some(pos)) => {
+                let label = pad_label(&style, &ctx.family.get(), pos);
+                view! { <PadDot pos=pos/>{label} }.into_any()
+            }
         }
     };
     let hint = move |slot: usize, key: &'static str| {
